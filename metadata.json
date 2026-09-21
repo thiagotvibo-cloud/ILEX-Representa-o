@@ -1,0 +1,6 @@
+{
+  "name": "ILEX CRM",
+  "description": "Sistema integrado de representação e assessoria comercial B2B para indústrias, clientes, pedidos e comissões.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

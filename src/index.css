@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --color-ilex-green: #355C4D;
+  --color-ilex-green-dark: #233D33;
+  --color-ilex-green-light: #487A67;
+  --color-ilex-green-subtle: #EDF3F0;
+  --color-ilex-gold: #B69A67;
+  --color-ilex-gold-dark: #967D50;
+  --color-ilex-gold-light: #CDB78C;
+  --color-ilex-gold-subtle: #F9F6F0;
+  --color-ilex-dark: #26332D;
+  --color-ilex-cream: #F7F8F6;
+  --color-ilex-sand: #EAECE8;
+  --color-ilex-border: #E5E9E5;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #F7F8F6;
+  color: #26332D;
+}
+
