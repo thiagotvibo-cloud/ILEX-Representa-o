@@ -4,7 +4,6 @@ import { useCRM } from '../lib/store';
 import { Sidebar } from './Sidebar';
 import { BottomNav } from './BottomNav';
 import { Header } from './Header';
-import { DemoBanner } from './DemoBanner';
 import { ProtectedRoute } from './ProtectedRoute';
 import { DashboardView } from '../features/dashboard/DashboardView';
 import { CustomersView } from '../features/customers/CustomersView';
@@ -30,7 +29,6 @@ export const AuthenticatedLayout: React.FC = () => {
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-          <DemoBanner />
           <Header />
 
           <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8">

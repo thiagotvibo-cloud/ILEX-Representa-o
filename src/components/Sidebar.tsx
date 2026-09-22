@@ -181,12 +181,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
 
         {/* User Identity & Session Area */}
         <div className="p-3 border-t border-[#355C4D]/30 bg-[#141311]">
-          {currentMember ? (
+          {currentMember || user ? (
             <div className="space-y-1.5">
               {!collapsed && (
                 <div className="flex items-center justify-between">
                   <span className="text-[9px] uppercase font-bold text-[#B69A67] tracking-wider">
-                    {ROLE_DEFINITIONS[roleCode || 'admin']?.label || 'Usuário'}
+                    {ROLE_DEFINITIONS[roleCode || 'admin']?.label || 'Administrador Master'}
                   </span>
                   <button
                     onClick={() => {
@@ -204,23 +204,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
 
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-[#355C4D] text-white font-bold text-xs flex items-center justify-center shrink-0 border border-[#B69A67]/40">
-                  {currentMember.full_name ? currentMember.full_name[0].toUpperCase() : 'U'}
+                  {currentMember?.full_name ? currentMember.full_name[0].toUpperCase() : user?.email ? user.email[0].toUpperCase() : 'A'}
                 </div>
                 {!collapsed && (
                   <div className="overflow-hidden flex-1">
-                    <p className="text-xs font-semibold text-white truncate">{currentMember.full_name}</p>
+                    <p className="text-xs font-semibold text-white truncate">
+                      {currentMember?.full_name || user?.email?.split('@')[0] || 'Administrador'}
+                    </p>
                     <p className="text-[10px] text-stone-400 truncate">
-                      {currentMember.email}
+                      {currentMember?.email || user?.email || 'Autenticado'}
                     </p>
                   </div>
                 )}
               </div>
 
-              {!collapsed && (currentMember.scope_manufacturer_name || currentMember.scope_customer_name) && (
+              {!collapsed && (currentMember?.scope_manufacturer_name || currentMember?.scope_customer_name) && (
                 <div className="mt-1 px-2 py-0.5 rounded bg-stone-900 border border-stone-800 text-[10px] flex items-center justify-between">
                   <span className="text-stone-500">Escopo:</span>
                   <span className="font-semibold text-stone-300 truncate max-w-[120px]">
-                    {currentMember.scope_manufacturer_name || currentMember.scope_customer_name}
+                    {currentMember?.scope_manufacturer_name || currentMember?.scope_customer_name}
                   </span>
                 </div>
               )}
@@ -233,11 +235,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
             </div>
           ) : (
             <div className="space-y-2">
-              {!collapsed && (
-                <p className="text-[10px] text-stone-400 leading-tight">
-                  Sessão não iniciada.
-                </p>
-              )}
               <button
                 onClick={() => setAuthModalOpen(true)}
                 className="w-full py-2 px-2 bg-[#355C4D] hover:bg-[#233D33] text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-[#B69A67]/30"

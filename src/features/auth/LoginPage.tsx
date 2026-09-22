@@ -266,18 +266,6 @@ export const LoginPage: React.FC = () => {
                 <ArrowRight size={14} className="text-[#A78A63]" />
               </button>
             </div>
-
-            {/* Quick Demo Mode */}
-            <div className="pt-1 flex items-center justify-between text-xs">
-              <span className="text-[11px] text-stone-500">Deseja simular sem banco remoto?</span>
-              <button
-                type="button"
-                onClick={handleEnterDemo}
-                className="text-[11px] font-semibold text-[#3E4A32] hover:underline cursor-pointer"
-              >
-                Ativar Modo Demonstração
-              </button>
-            </div>
           </div>
 
           {/* Database Setup Accordion / Helper */}

@@ -162,21 +162,18 @@ export const Header: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2 text-xs text-stone-500 mt-0.5">
-                <span className="font-medium text-[#355C4D]">
-                  {roleCode && (user || isDemoMode) ? ROLE_DEFINITIONS[roleCode]?.label : 'Acesso Não Autenticado'}
+                <span className="font-semibold text-[#355C4D]">
+                  {roleCode && ROLE_DEFINITIONS[roleCode]
+                    ? ROLE_DEFINITIONS[roleCode].label
+                    : 'Administrador Master'}
                 </span>
                 <span className="text-stone-300">•</span>
-                {/* Real Session Status */}
-                {isDemoMode ? (
-                  <span className="text-amber-800 font-semibold">Modo Demo Local</span>
-                ) : user ? (
-                  <span className="text-emerald-700 font-medium flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    {user.email}
+                <span className="text-emerald-700 font-medium flex items-center gap-1.5 truncate max-w-[200px] sm:max-w-none">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                  <span className="truncate">
+                    {currentMember?.full_name || user?.email || currentMember?.email || 'Sessão Autenticada'}
                   </span>
-                ) : (
-                  <span className="text-stone-500 font-medium">Sessão não iniciada</span>
-                )}
+                </span>
               </div>
             </div>
           </div>

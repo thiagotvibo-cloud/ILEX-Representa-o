@@ -26,8 +26,8 @@ const AppGate: React.FC = () => {
     );
   }
 
-  // Active session exists: either Supabase session / member or explicit demo mode
-  const hasActiveSession = Boolean(session || currentMember || user || isDemoMode);
+  // Active authenticated session exists: Supabase session, authenticated user or loaded member
+  const hasActiveSession = Boolean(session || currentMember || user);
 
   if (!hasActiveSession) {
     return <LoginPage />;
