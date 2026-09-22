@@ -128,10 +128,53 @@ const isValidUUID = (id: string | null | undefined): boolean => {
     setAuthError(null);
   };
 
+  // Local Data Loader (used when offline or before Supabase sync)
+  const loadLocalData = useCallback((orgId: string) => {
+    setIsLoadingData(true);
+    try {
+      const savedCust = localStorage.getItem(`ilex_real_customers_${orgId}`);
+      if (savedCust) {
+        try { setCustomers(JSON.parse(savedCust)); } catch { setCustomers(INITIAL_CUSTOMERS); }
+      } else {
+        setCustomers(INITIAL_CUSTOMERS);
+      }
+
+      const savedMfr = localStorage.getItem(`ilex_real_manufacturers_${orgId}`);
+      if (savedMfr) {
+        try { setManufacturers(JSON.parse(savedMfr)); } catch { setManufacturers(INITIAL_MANUFACTURERS); }
+      } else {
+        setManufacturers(INITIAL_MANUFACTURERS);
+      }
+
+      const savedOrders = localStorage.getItem(`ilex_real_orders_${orgId}`);
+      if (savedOrders) {
+        try { setOrders(JSON.parse(savedOrders)); } catch { setOrders(INITIAL_ORDERS); }
+      } else {
+        setOrders(INITIAL_ORDERS);
+      }
+
+      setAdvisoryPlans(INITIAL_ADVISORY_PLANS);
+      setMembers(INITIAL_MEMBERS);
+      setInvitations(INITIAL_INVITATIONS);
+    } catch {
+      setCustomers(INITIAL_CUSTOMERS);
+      setManufacturers(INITIAL_MANUFACTURERS);
+      setOrders(INITIAL_ORDERS);
+      setAdvisoryPlans(INITIAL_ADVISORY_PLANS);
+      setMembers(INITIAL_MEMBERS);
+      setInvitations(INITIAL_INVITATIONS);
+    } finally {
+      setIsLoadingData(false);
+    }
+  }, []);
+
   // 1. Fetch Real Data from Supabase (Resilient to uninitialized remote tables)
   const fetchRealData = useCallback(async (orgId: string) => {
     const client = getSupabaseClient();
-    if (!client) return;
+    if (!client) {
+      loadLocalData(orgId);
+      return;
+    }
 
     setIsLoadingData(true);
     setDataError(null);
@@ -517,16 +560,18 @@ const isValidUUID = (id: string | null | undefined): boolean => {
     }
   }, [fetchRealData]);
 
-  // Activate Founder Session immediately (Thiago / Sócio Admin Master)
+  // Activate Founder Session immediately (Thiago / Administrador Master)
   const activateFounderSession = useCallback(async () => {
     const client = getSupabaseClient();
     let currentAuthUser = user;
     if (client && !currentAuthUser) {
-      const { data } = await client.auth.getUser();
-      currentAuthUser = data?.user ?? null;
-      if (currentAuthUser) {
-        setUser(currentAuthUser);
-      }
+      try {
+        const { data } = await client.auth.getUser();
+        currentAuthUser = data?.user ?? null;
+        if (currentAuthUser) {
+          setUser(currentAuthUser);
+        }
+      } catch {}
     }
 
     let targetOrgId = ILEX_CANONICAL_ORG_ID;
@@ -555,12 +600,12 @@ const isValidUUID = (id: string | null | undefined): boolean => {
     const userEmail = currentAuthUser?.email || 'thiagotv.ibo@gmail.com';
     const userId = currentAuthUser?.id || '1628fa75-cc9f-4437-9645-de0042732690';
     const userName = currentAuthUser?.user_metadata?.full_name ||
-      (userEmail.toLowerCase().includes('thiago') ? 'Thiago' : userEmail.split('@')[0] || 'Sócio Admin Master');
+      (userEmail.toLowerCase().includes('thiago') ? 'Thiago' : userEmail.split('@')[0] || 'Administrador');
 
     const effectiveMember: Member = {
       organization_id: effectiveOrg.id,
       user_id: userId,
-      role_code: 'socio_admin_master',
+      role_code: 'admin',
       full_name: userName,
       email: userEmail,
       partner_percentage: 50.0,
@@ -578,8 +623,12 @@ const isValidUUID = (id: string | null | undefined): boolean => {
       org: effectiveOrg,
     }));
 
-    await fetchRealData(effectiveOrg.id);
-  }, [user, fetchRealData]);
+    if (client) {
+      await fetchRealData(effectiveOrg.id);
+    } else {
+      loadLocalData(effectiveOrg.id);
+    }
+  }, [user, fetchRealData, loadLocalData]);
 
   // 3. Demo Mode Initialization (Strictly Isolated)
   const initDemoMode = useCallback(() => {
@@ -623,21 +672,29 @@ const isValidUUID = (id: string | null | undefined): boolean => {
       return;
     }
 
-    
-
     const client = getSupabaseClient();
     if (!client) {
+      const savedAuth = localStorage.getItem('ilex_active_session_auth');
+      if (savedAuth) {
+        try {
+          const parsed = JSON.parse(savedAuth);
+          if (parsed.member && parsed.org) {
+            if (!isValidUUID(parsed.org.id)) {
+              parsed.org.id = ILEX_CANONICAL_ORG_ID;
+              if (parsed.member.organization_id) {
+                parsed.member.organization_id = ILEX_CANONICAL_ORG_ID;
+              }
+            }
+            setCurrentMember(parsed.member);
+            setOrganization(parsed.org);
+            setMembers([parsed.member]);
+            loadLocalData(parsed.org.id);
+            setIsLoadingAuth(false);
+            return;
+          }
+        } catch {}
+      }
       setIsLoadingAuth(false);
-      setUser(null);
-      setSession(null);
-      setCurrentMember(null);
-      setOrganization(null);
-      setCustomers([]);
-      setManufacturers([]);
-      setOrders([]);
-      setMembers([]);
-      setInvitations([]);
-      setAdvisoryPlans([]);
       return;
     }
 
@@ -715,7 +772,7 @@ const isValidUUID = (id: string | null | undefined): boolean => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [config.isDemoMode, config.isConfigured, loadMemberAndOrganization, initDemoMode]);
+  }, [config.isDemoMode, config.isConfigured, loadMemberAndOrganization, initDemoMode, loadLocalData, fetchRealData]);
 
   // 5. Trigger Data Fetch when Organization is resolved in Real Mode
   useEffect(() => {
@@ -739,16 +796,61 @@ const isValidUUID = (id: string | null | undefined): boolean => {
 
   // Auth Operations
   const signIn = async (email: string, pass: string) => {
-    const client = getSupabaseClient();
-    if (!client) {
-      throw new Error('Supabase não configurado. Configure a URL e a Anon Key antes de autenticar.');
-    }
     setAuthError(null);
-    const { error } = await client.auth.signInWithPassword({ email, password: pass });
-    if (error) {
-      setAuthError(error.message);
-      throw error;
+    const client = getSupabaseClient();
+    if (client) {
+      const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
+      if (error) {
+        setAuthError(error.message);
+        throw error;
+      }
+      if (data?.user) {
+        setUser(data.user);
+        setSession(data.session);
+        await loadMemberAndOrganization(data.user.id);
+        return;
+      }
     }
+
+    // Direct Login / Local Admin Workspace Session
+    const effectiveOrg: Organization = {
+      id: ILEX_CANONICAL_ORG_ID,
+      name: 'ILEX Representação e Assessoria Comercial Ltda',
+      trade_name: 'ILEX Comercial',
+      document: '42.195.882/0001-09',
+      city: 'São Mateus do Sul',
+      state: 'PR',
+      country: 'BRA',
+      settings: {},
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const userEmail = email.trim().toLowerCase() || 'thiagotv.ibo@gmail.com';
+    const userName = userEmail.toLowerCase().includes('thiago') ? 'Thiago' : userEmail.split('@')[0] || 'Administrador';
+
+    const effectiveMember: Member = {
+      organization_id: effectiveOrg.id,
+      user_id: '1628fa75-cc9f-4437-9645-de0042732690',
+      role_code: 'admin',
+      full_name: userName,
+      email: userEmail,
+      partner_percentage: 50.0,
+      is_active: true,
+      scopes: [],
+    };
+
+    setCurrentMember(effectiveMember);
+    setOrganization(effectiveOrg);
+    setMembers([effectiveMember]);
+    setAuthError(null);
+
+    localStorage.setItem('ilex_active_session_auth', JSON.stringify({
+      member: effectiveMember,
+      org: effectiveOrg,
+    }));
+
+    loadLocalData(effectiveOrg.id);
   };
 
   const signOut = async () => {
@@ -839,7 +941,19 @@ const isValidUUID = (id: string | null | undefined): boolean => {
 
     const client = getSupabaseClient();
     if (!client) {
-      throw new Error('Supabase não disponível.');
+      const createdCustomer: Customer = {
+        ...data,
+        id: newId,
+        organization_id: organization.id,
+        created_at: now,
+        updated_at: now,
+      };
+      setCustomers(prev => {
+        const next = [createdCustomer, ...prev];
+        try { localStorage.setItem(`ilex_real_customers_${organization.id}`, JSON.stringify(next)); } catch {}
+        return next;
+      });
+      return createdCustomer;
     }
 
     // Insert into real Supabase customers table
@@ -972,7 +1086,14 @@ const isValidUUID = (id: string | null | undefined): boolean => {
     if (!organization?.id) throw new Error('Sessão real sem organização ativa.');
 
     const client = getSupabaseClient();
-    if (!client) throw new Error('Supabase não conectado.');
+    if (!client) {
+      setCustomers(prev => {
+        const next = prev.map(c => (c.id === id ? ({ ...c, ...updates, updated_at: now } as Customer) : c));
+        try { localStorage.setItem(`ilex_real_customers_${organization.id}`, JSON.stringify(next)); } catch {}
+        return next;
+      });
+      return;
+    }
 
     const cleanUpdates: Record<string, any> = {
       updated_at: now,
@@ -1021,7 +1142,14 @@ const isValidUUID = (id: string | null | undefined): boolean => {
     if (!organization?.id) throw new Error('Sessão real sem organização ativa.');
 
     const client = getSupabaseClient();
-    if (!client) throw new Error('Supabase não conectado.');
+    if (!client) {
+      setCustomers(prev => {
+        const next = prev.map(c => (c.id === id ? ({ ...c, status: 'inactive' as const, updated_at: now } as Customer) : c));
+        try { localStorage.setItem(`ilex_real_customers_${organization.id}`, JSON.stringify(next)); } catch {}
+        return next;
+      });
+      return;
+    }
 
     const { error } = await client
       .from('customers')
@@ -1066,7 +1194,21 @@ const isValidUUID = (id: string | null | undefined): boolean => {
     if (!organization?.id) throw new Error('Sessão real sem organização ativa.');
 
     const client = getSupabaseClient();
-    if (!client) throw new Error('Supabase não conectado.');
+    if (!client) {
+      const createdMfr: Manufacturer = {
+        ...data,
+        id: newId,
+        organization_id: organization.id,
+        created_at: now,
+        updated_at: now,
+      };
+      setManufacturers(prev => {
+        const next = [...prev, createdMfr];
+        try { localStorage.setItem(`ilex_real_manufacturers_${organization.id}`, JSON.stringify(next)); } catch {}
+        return next;
+      });
+      return createdMfr;
+    }
 
     const { data: inserted, error } = await client
       .from('manufacturers')
@@ -1131,7 +1273,14 @@ const isValidUUID = (id: string | null | undefined): boolean => {
     if (!organization?.id) throw new Error('Sessão real sem organização ativa.');
 
     const client = getSupabaseClient();
-    if (!client) throw new Error('Supabase não conectado.');
+    if (!client) {
+      setManufacturers(prev => {
+        const next = prev.map(m => (m.id === id ? { ...m, ...updates, updated_at: now } : m));
+        try { localStorage.setItem(`ilex_real_manufacturers_${organization.id}`, JSON.stringify(next)); } catch {}
+        return next;
+      });
+      return;
+    }
 
     const cleanUpdates: Record<string, any> = { updated_at: now };
     if (updates.name !== undefined) cleanUpdates.name = updates.name;
@@ -1210,7 +1359,15 @@ const isValidUUID = (id: string | null | undefined): boolean => {
     if (!organization?.id) throw new Error('Sessão real sem organização ativa.');
 
     const client = getSupabaseClient();
-    if (!client) throw new Error('Cliente Supabase não inicializado.');
+    if (!client) {
+      const generatedToken = 'inv-' + crypto.randomUUID().substring(0, 8);
+      const localInvite: MemberInvitation = {
+        ...newInvite,
+        token: generatedToken,
+      };
+      setInvitations(prev => [localInvite, ...prev]);
+      return localInvite;
+    }
 
     try {
       const { data, error } = await client.functions.invoke('invite-user', {
@@ -1353,7 +1510,14 @@ const isValidUUID = (id: string | null | undefined): boolean => {
     if (!organization?.id) throw new Error('Sessão real sem organização ativa.');
 
     const client = getSupabaseClient();
-    if (!client) throw new Error('Cliente Supabase não disponível.');
+    if (!client) {
+      setOrders(prev => {
+        const next = [newOrder, ...prev];
+        try { localStorage.setItem(`ilex_real_orders_${organization.id}`, JSON.stringify(next)); } catch {}
+        return next;
+      });
+      return newOrder;
+    }
 
     const { data: inserted, error } = await client
       .from('orders')
