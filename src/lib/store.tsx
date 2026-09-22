@@ -481,7 +481,7 @@ const isValidUUID = (id: string | null | undefined): boolean => {
         // Automatically establish the active founder session (Thiago / Sócio Admin Master)
         const { data: authUserData } = await client.auth.getUser();
         const currentAuthUser = authUserData?.user;
-        const userEmail = currentAuthUser?.email || 'thiagotv.ibo@gmail.com';
+        const userEmail = currentAuthUser?.email || 'admin@ilexcomercial.com.br';
         const userName = currentAuthUser?.user_metadata?.full_name ||
           (userEmail.toLowerCase().includes('thiago') ? 'Thiago' : userEmail.split('@')[0]);
 
@@ -628,7 +628,7 @@ const isValidUUID = (id: string | null | undefined): boolean => {
       updated_at: new Date().toISOString(),
     };
 
-    const userEmail = currentAuthUser?.email || 'thiagotv.ibo@gmail.com';
+    const userEmail = currentAuthUser?.email || 'admin@ilexcomercial.com.br';
     const userId = currentAuthUser?.id || '1628fa75-cc9f-4437-9645-de0042732690';
     const userName = currentAuthUser?.user_metadata?.full_name ||
       (userEmail.toLowerCase().includes('thiago') ? 'Thiago' : userEmail.split('@')[0] || 'Administrador');
@@ -857,7 +857,7 @@ const isValidUUID = (id: string | null | undefined): boolean => {
       updated_at: new Date().toISOString(),
     };
 
-    const userEmail = email.trim().toLowerCase() || 'thiagotv.ibo@gmail.com';
+    const userEmail = email.trim().toLowerCase() || 'admin@ilexcomercial.com.br';
 
     // Check if there is an existing member registered with this email
     let matchingMember = members.find(m => m.email.toLowerCase() === userEmail);
@@ -877,7 +877,7 @@ const isValidUUID = (id: string | null | undefined): boolean => {
     if (matchingMember) {
       effectiveMember = { ...matchingMember };
     } else {
-      const isThiagoOrAdmin = userEmail.includes('thiago') || userEmail.includes('admin') || userEmail === 'thiagotv.ibo@gmail.com';
+      const isThiagoOrAdmin = userEmail.includes('thiago') || userEmail.includes('admin');
       const userName = isThiagoOrAdmin ? 'Thiago' : userEmail.split('@')[0] || 'Membro';
 
       effectiveMember = {

@@ -19,7 +19,7 @@ export const LoginPage: React.FC = () => {
     clearError,
   } = useCRM();
 
-  const [email, setEmail] = useState('thiagotv.ibo@gmail.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -150,10 +150,12 @@ export const LoginPage: React.FC = () => {
                   <Mail size={15} className="absolute left-3 top-2.5 text-stone-400" />
                   <input
                     type="email"
+                    name="email"
+                    autoComplete="email"
                     required
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    placeholder="thiagotv.ibo@gmail.com"
+                    placeholder="seu.email@empresa.com.br"
                     className="w-full bg-[#FAF9F5] border border-[#E2DDD5] rounded-lg pl-9 pr-3 py-2.5 text-xs text-[#1C1A17] focus:outline-none focus:border-[#3E4A32] focus:ring-1 focus:ring-[#3E4A32] transition-colors"
                   />
                 </div>
@@ -169,9 +171,12 @@ export const LoginPage: React.FC = () => {
                   <Key size={15} className="absolute left-3 top-2.5 text-stone-400" />
                   <input
                     type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    autoComplete="current-password"
+                    required
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
+                    placeholder="Digite sua senha"
                     className="w-full bg-[#FAF9F5] border border-[#E2DDD5] rounded-lg pl-9 pr-10 py-2.5 text-xs text-[#1C1A17] focus:outline-none focus:border-[#3E4A32] focus:ring-1 focus:ring-[#3E4A32] transition-colors"
                   />
                   <button

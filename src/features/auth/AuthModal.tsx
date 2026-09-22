@@ -233,10 +233,12 @@ END $$;` : '';
                   <Mail size={14} className="absolute left-3 top-2.5 text-stone-400" />
                   <input
                     type="email"
+                    name="email"
+                    autoComplete="email"
                     required
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    placeholder="thiagotv.ibo@gmail.com"
+                    placeholder="seu.email@empresa.com.br"
                     className="w-full bg-[#F8F7F4] border border-[#E2DDD5] rounded-lg pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-[#3E4A32]"
                   />
                 </div>

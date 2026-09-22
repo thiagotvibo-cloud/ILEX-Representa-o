@@ -529,7 +529,7 @@ BEGIN
   INSERT INTO public.memberships (
     organization_id, user_id, role_code, full_name, email, partner_percentage, is_active
   ) VALUES (
-    v_org_id, '1628fa75-cc9f-4437-9645-de0042732690'::UUID, 'socio_admin_master', 'Thiago', 'thiagotv.ibo@gmail.com', 50.0, true
+    v_org_id, '1628fa75-cc9f-4437-9645-de0042732690'::UUID, 'socio_admin_master', 'Thiago', 'thiago@ilexcomercial.com.br', 50.0, true
   )
   ON CONFLICT (organization_id, user_id) DO UPDATE
   SET role_code = 'socio_admin_master', is_active = true, partner_percentage = 50.0;

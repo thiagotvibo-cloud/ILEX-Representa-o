@@ -17,7 +17,7 @@ export const INITIAL_MEMBERS: Member[] = [
     user_id: 'b0000000-0000-0000-0000-000000000002',
     role_code: 'admin',
     full_name: 'Administrador Thiago',
-    email: 'thiagotv.ibo@gmail.com',
+    email: 'thiago@ilexcomercial.com.br',
     is_active: true,
   },
   {
