@@ -21,6 +21,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthModal } from '../features/auth/AuthModal';
 import { PWAInstallButton } from './PWAInstallButton';
+import { IlexLogo } from './IlexLogo';
 import {
   ROLE_DEFINITIONS,
   isRepresentadaUser,
@@ -139,10 +140,11 @@ export const Header: React.FC = () => {
         <div className="flex items-center justify-between gap-3">
           {/* Left: Organization & Profile Context */}
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 overflow-hidden">
-            <img
-              src="/assets/logo-06-verde.svg"
-              alt="Logotipo ILEX"
-              className="w-8 h-8 sm:w-9 sm:h-9 object-contain shrink-0"
+            <IlexLogo
+              variant={effectiveTheme === 'dark' ? '05' : '06'}
+              size={34}
+              className="shrink-0"
+              title="ILEX Representações"
             />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">

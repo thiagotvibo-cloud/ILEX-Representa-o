@@ -2,10 +2,10 @@ import React from 'react';
 
 export interface IlexLogoProps {
   /**
-   * 'gold' / 'dark': Logo 05 (Dourada) - Para fundos escuros.
-   * 'green' / 'light': Logo 06 (Verde) - Para fundos claros.
+   * 'gold' / 'dark' / '05': Logo 05 (Dourada) - Para fundos escuros.
+   * 'green' / 'light' / '06': Logo 06 (Verde) - Para fundos claros.
    */
-  variant?: 'gold' | 'green' | 'dark' | 'light';
+  variant?: 'gold' | 'green' | 'dark' | 'light' | '05' | '06';
   size?: number | string;
   className?: string;
   showText?: boolean;
@@ -15,8 +15,8 @@ export interface IlexLogoProps {
 
 /**
  * Componente oficial de logotipo ILEX:
- * - Fundos escuros (Dark theme): Logo 05 (Dourada) - Pilares em tom Ouro/Bronze nobre (#9C7F56).
- * - Fundos claros (Light theme): Logo 06 (Verde) - Pilares em tom Verde Floresta ILEX (#384633).
+ * - Fundos escuros (Dark theme): Logo 05 (Dourada) - Pilares em tom Ouro arquitetônico (#A68A56), folha verde e fita dupla dourada.
+ * - Fundos claros (Light theme): Logo 06 (Verde) - Pilares em tom Verde Botânico ILEX (#445236), folha verde e fita dupla dourada.
  */
 export const IlexLogo: React.FC<IlexLogoProps> = ({
   variant = 'gold',
@@ -26,9 +26,9 @@ export const IlexLogo: React.FC<IlexLogoProps> = ({
   textSubtitle,
   title = 'ILEX — Representação e Assessoria Comercial',
 }) => {
-  const isDarkBg = variant === 'gold' || variant === 'dark';
+  const isDarkBg = variant === 'gold' || variant === 'dark' || variant === '05';
 
-  const logoSrc = isDarkBg ? '/assets/logo-05-dourada.svg' : '/assets/logo-06-verde.svg';
+  const logoSrc = isDarkBg ? '/assets/LOGO-05.svg' : '/assets/LOGO-06.svg';
   const logoAlt = isDarkBg ? 'Logotipo ILEX 05 (Dourada)' : 'Logotipo ILEX 06 (Verde)';
 
   const sizeStyle = typeof size === 'number' ? { width: `${size}px`, height: `${size}px` } : {};
