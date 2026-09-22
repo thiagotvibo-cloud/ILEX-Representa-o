@@ -110,7 +110,7 @@ export const BottomNav: React.FC = () => {
       )}
 
       {/* Main Bottom Nav Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#1C1A17] border-t border-[#355C4D]/30 px-2 py-1.5 flex items-center justify-around md:hidden shadow-lg select-none">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#1C1A17] border-t border-[#355C4D]/30 px-2 pt-2 pb-[max(env(safe-area-inset-bottom,0px),0.75rem)] flex items-center justify-around md:hidden shadow-lg select-none">
         <NavLink
           to="/"
           className={({ isActive }) =>

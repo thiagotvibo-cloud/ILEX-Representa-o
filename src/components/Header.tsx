@@ -130,18 +130,18 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="bg-white border-b border-[#E5E9E5] px-4 md:px-8 py-3 shrink-0 select-none">
-        <div className="flex items-center justify-between gap-4">
+      <header className="bg-white border-b border-[#E5E9E5] px-3.5 sm:px-6 md:px-8 pt-[max(env(safe-area-inset-top,0px),0.85rem)] pb-3 shrink-0 select-none sticky top-0 z-30 shadow-2xs">
+        <div className="flex items-center justify-between gap-3">
           {/* Left: Organization & Profile Context */}
-          <div className="flex items-center gap-3 overflow-hidden">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 overflow-hidden">
             <img
               src="/assets/logo-06-verde.svg"
               alt="Logotipo ILEX"
-              className="w-9 h-9 object-contain shrink-0"
+              className="w-8 h-8 sm:w-9 sm:h-9 object-contain shrink-0"
             />
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm md:text-base font-bold text-[#26332D] truncate">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h2 className="text-xs sm:text-sm md:text-base font-bold text-[#26332D] truncate">
                   {organization?.trade_name || organization?.name || 'ILEX Representações'}
                 </h2>
 
@@ -161,17 +161,17 @@ export const Header: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-stone-500 mt-0.5">
-                <span className="font-semibold text-[#355C4D]">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-stone-500 mt-0.5">
+                <span className="font-semibold text-[#355C4D] shrink-0">
                   {roleCode && ROLE_DEFINITIONS[roleCode]
                     ? ROLE_DEFINITIONS[roleCode].label
                     : 'Administrador Master'}
                 </span>
                 <span className="text-stone-300">•</span>
-                <span className="text-emerald-700 font-medium flex items-center gap-1.5 truncate max-w-[200px] sm:max-w-none">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                <span className="text-emerald-700 font-medium flex items-center gap-1 truncate">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                   <span className="truncate">
-                    {currentMember?.full_name || user?.email || currentMember?.email || 'Sessão Autenticada'}
+                    {currentMember?.full_name || user?.email?.split('@')[0] || 'Autenticado'}
                   </span>
                 </span>
               </div>

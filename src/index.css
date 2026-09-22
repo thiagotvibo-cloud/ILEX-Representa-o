@@ -42,9 +42,13 @@ body {
 
 /* Safe area inset utilities */
 .safe-pb {
-  padding-bottom: env(safe-area-inset-bottom, 16px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
 }
 
 .safe-pt {
-  padding-top: env(safe-area-inset-top, 16px);
+  padding-top: max(env(safe-area-inset-top, 0px), 16px);
+}
+
+.safe-top-header {
+  padding-top: max(env(safe-area-inset-top, 0px), 14px);
 }

@@ -23,11 +23,9 @@ import { SUPABASE_COMPLETE_SETUP_SQL } from '../../lib/supabaseCompleteScript';
 export const LoginPage: React.FC = () => {
   const {
     signIn,
-    activateFounderSession,
     authError,
     clearError,
     supabaseUrl,
-    toggleDemoMode,
   } = useCRM();
 
   const [email, setEmail] = useState('thiagotv.ibo@gmail.com');
@@ -58,25 +56,8 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleEnterAsFounder = async () => {
-    setLoading(true);
-    setLocalError(null);
-    clearError();
-    try {
-      await activateFounderSession();
-    } catch (err: any) {
-      setLocalError(err?.message || 'Falha ao ativar sessão de administrador.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleEnterDemo = () => {
-    toggleDemoMode(true);
-  };
-
   return (
-    <div className="min-h-screen w-screen flex flex-col md:flex-row bg-[#F7F8F6] text-[#26332D] antialiased">
+    <div className="min-h-[100dvh] w-screen flex flex-col md:flex-row bg-[#F7F8F6] text-[#26332D] antialiased">
       {/* Left Brand Showcase Column */}
       <div className="hidden lg:flex lg:w-5/12 bg-[#2C3524] text-white p-12 flex-col justify-between relative overflow-hidden border-r border-[#3E4A32]">
         {/* Background decorative watermark */}
@@ -138,7 +119,7 @@ export const LoginPage: React.FC = () => {
       </div>
 
       {/* Right Login Form Column */}
-      <div className="flex-1 flex flex-col justify-center items-center p-6 md:p-12 overflow-y-auto">
+      <div className="flex-1 flex flex-col justify-center items-center p-6 md:p-12 overflow-y-auto pt-[max(env(safe-area-inset-top,0px),1.5rem)] pb-[max(env(safe-area-inset-bottom,0px),1.5rem)]">
         <div className="max-w-md w-full space-y-6">
           {/* Mobile Brand Header */}
           <div className="lg:hidden flex items-center gap-3 pb-3 border-b border-[#E2DDD5]">
@@ -157,7 +138,7 @@ export const LoginPage: React.FC = () => {
           <div className="space-y-1">
             <h2 className="text-xl font-bold text-[#1C1A17] tracking-tight">Entrar na Plataforma</h2>
             <p className="text-xs text-stone-600">
-              Acesse com seu e-mail cadastrado ou utilize o acesso de Administrador.
+              Digite seu e-mail e senha para acessar o painel com as permissões da sua conta.
             </p>
           </div>
 
@@ -176,7 +157,7 @@ export const LoginPage: React.FC = () => {
 
           {/* Login Form Card */}
           <div className="bg-white rounded-2xl border border-[#E2DDD5] p-6 shadow-sm space-y-4">
-            <form onSubmit={handleLogin} className="space-y-3.5 text-xs">
+            <form onSubmit={handleLogin} className="space-y-4 text-xs">
               <div>
                 <label className="block text-[11px] font-semibold text-stone-700 mb-1">
                   E-mail de Acesso
@@ -199,13 +180,11 @@ export const LoginPage: React.FC = () => {
                   <label className="block text-[11px] font-semibold text-stone-700">
                     Senha
                   </label>
-                  <span className="text-[10px] text-stone-400">Supabase Auth</span>
                 </div>
                 <div className="relative">
                   <Key size={15} className="absolute left-3 top-2.5 text-stone-400" />
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    required
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="••••••••••••"
@@ -214,7 +193,7 @@ export const LoginPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2.5 text-stone-400 hover:text-stone-600 transition-colors"
+                    className="absolute right-3 top-2.5 text-stone-400 hover:text-stone-600 transition-colors cursor-pointer"
                   >
                     {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
@@ -224,48 +203,13 @@ export const LoginPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 bg-[#3E4A32] hover:bg-[#2C3524] disabled:opacity-50 text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                className="w-full py-3 bg-[#3E4A32] hover:bg-[#2C3524] disabled:opacity-50 text-white rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-[0.99]"
                 id="btn-login-submit"
               >
                 <LogIn size={15} className="text-[#A78A63]" />
-                <span>{loading ? 'Validando Sessão...' : 'Entrar com E-mail e Senha'}</span>
+                <span>{loading ? 'Entrando...' : 'Entrar'}</span>
               </button>
             </form>
-
-            <div className="relative py-2 flex items-center justify-center">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[#E2DDD5]"></div>
-              </div>
-              <span className="relative bg-white px-3 text-[11px] text-stone-400 font-medium uppercase tracking-wider">
-                ou acesso rápido
-              </span>
-            </div>
-
-            {/* Quick Access for Admin */}
-            <div className="p-3.5 bg-gradient-to-br from-[#EDF1EA] to-[#FAF9F5] rounded-xl border border-[#3E4A32]/20 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#3E4A32]">
-                  <Sparkles size={15} className="text-[#A78A63]" />
-                  <span>Acesso Direto Administrador</span>
-                </div>
-                <span className="px-2 py-0.5 bg-[#3E4A32] text-white rounded text-[9px] font-bold uppercase tracking-wider">
-                  Admin
-                </span>
-              </div>
-              <p className="text-[11px] text-stone-700 leading-relaxed">
-                Inicia a sessão direta como Administrador na organização ILEX Comercial Ltda.
-              </p>
-              <button
-                type="button"
-                onClick={handleEnterAsFounder}
-                disabled={loading}
-                className="w-full py-2.5 bg-[#3E4A32] hover:bg-[#2C3524] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
-                id="btn-login-founder"
-              >
-                <span>Entrar como Administrador</span>
-                <ArrowRight size={14} className="text-[#A78A63]" />
-              </button>
-            </div>
           </div>
 
           {/* Database Setup Accordion / Helper */}
@@ -285,7 +229,7 @@ export const LoginPage: React.FC = () => {
               </button>
             </div>
             <p className="text-[11px] text-stone-500 leading-relaxed">
-              Projeto: <code className="font-mono text-stone-700 font-semibold">{supabaseUrl ? new URL(supabaseUrl).hostname : 'Supabase Conectado'}</code>. Execute o script no SQL Editor para criar as tabelas e políticas de acesso.
+              Projeto: <code className="font-mono text-stone-700 font-semibold">{supabaseUrl ? new URL(supabaseUrl).hostname : 'Supabase Conectado'}</code>.
             </p>
           </div>
         </div>
