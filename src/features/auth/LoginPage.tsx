@@ -52,7 +52,7 @@ export const LoginPage: React.FC = () => {
         <div className="relative z-10 space-y-6">
           <div className="flex items-center gap-4">
             <img
-              src="/assets/logo-05-dourada.svg"
+              src="/assets/LOGO-05.svg"
               alt="Logotipo ILEX Dourada"
               className="w-14 h-14 object-contain shrink-0 drop-shadow-md"
             />
@@ -108,7 +108,7 @@ export const LoginPage: React.FC = () => {
           {/* Mobile Brand Header */}
           <div className="lg:hidden flex items-center gap-3 pb-3 border-b border-[#E2DDD5]">
             <img
-              src="/assets/logo-06-verde.svg"
+              src="/assets/LOGO-06.svg"
               alt="Logotipo ILEX"
               className="w-11 h-11 object-contain shrink-0"
             />

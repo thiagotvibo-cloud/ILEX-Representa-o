@@ -110,7 +110,7 @@ END $$;` : '';
         <div className="flex items-center justify-between pb-3 border-b border-[#E2DDD5]">
           <div className="flex items-center gap-3">
             <img
-              src="/assets/logo-06-verde.svg"
+              src="/assets/LOGO-06.svg"
               alt="Logotipo ILEX Verde"
               className="w-8 h-8 object-contain shrink-0"
             />

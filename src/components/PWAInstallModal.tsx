@@ -30,7 +30,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
 
           <div className="flex items-center gap-3 mb-2">
             <img
-              src="/assets/logo-05-dourada.svg"
+              src="/assets/LOGO-05.svg"
               alt="ILEX Logo"
               className="w-10 h-10 object-contain drop-shadow"
             />
