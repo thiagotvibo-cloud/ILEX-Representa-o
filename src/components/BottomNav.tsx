@@ -20,6 +20,7 @@ import {
   isRepresentadaUser,
   isAssociadoUser,
 } from '../types';
+import { PWAInstallButton } from './PWAInstallButton';
 
 export const BottomNav: React.FC = () => {
   const { currentMember } = useCRM();
@@ -99,6 +100,10 @@ export const BottomNav: React.FC = () => {
                   </NavLink>
                 </>
               )}
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-stone-800">
+              <PWAInstallButton variant="full" />
             </div>
           </div>
         </div>

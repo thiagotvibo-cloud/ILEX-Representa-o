@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthModal } from '../features/auth/AuthModal';
+import { PWAInstallButton } from './PWAInstallButton';
 import {
   ROLE_DEFINITIONS,
   isRepresentadaUser,
@@ -286,6 +287,9 @@ export const Header: React.FC = () => {
 
           {/* Right: Actions, Notifications & Session */}
           <div className="flex items-center gap-2.5">
+            {/* PWA Direct Install Button for Chrome / Mobile */}
+            <PWAInstallButton variant="compact" />
+
             {/* Operational Notifications Popover */}
             <div className="relative" ref={notifRef}>
               <button

@@ -23,6 +23,7 @@ import {
 import { useCRM } from '../lib/store';
 import { AuthModal } from '../features/auth/AuthModal';
 import { IlexLogo } from './IlexLogo';
+import { PWAInstallButton } from './PWAInstallButton';
 import {
   ROLE_DEFINITIONS,
   canManageUsersAndSecurity,
@@ -221,6 +222,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
                   <span className="font-semibold text-stone-300 truncate max-w-[120px]">
                     {currentMember.scope_manufacturer_name || currentMember.scope_customer_name}
                   </span>
+                </div>
+              )}
+              {/* Install App button */}
+              {!collapsed && (
+                <div className="pt-2">
+                  <PWAInstallButton variant="subtle" />
                 </div>
               )}
             </div>

@@ -16,9 +16,35 @@
   --color-ilex-border: #E5E9E5;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+  height: 100%;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: #F7F8F6;
   color: #26332D;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 100%;
+  overscroll-behavior-y: none;
 }
 
+/* Mobile input zoom prevention: iOS Safari zooms whenever input font-size < 16px */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Safe area inset utilities */
+.safe-pb {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+.safe-pt {
+  padding-top: env(safe-area-inset-top, 16px);
+}

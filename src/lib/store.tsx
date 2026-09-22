@@ -74,7 +74,19 @@ export interface CRMContextType {
     scopeId?: string;
     scopeName?: string;
   }) => Promise<MemberInvitation>;
+  createMemberDirect: (params: {
+    email: string;
+    fullName: string;
+    roleCode: UserRole;
+    partnerPercentage?: number;
+    scopeType?: 'manufacturer' | 'customer' | 'partner';
+    scopeId?: string;
+    scopeName?: string;
+  }) => Promise<Member>;
+  updateMember: (userId: string, updates: Partial<Member>) => Promise<void>;
+  deleteMember: (userId: string) => Promise<void>;
   revokeInvitation: (invitationId: string) => Promise<void>;
+  deleteInvitation: (invitationId: string) => Promise<void>;
   toggleMemberActive: (userId: string, isActive: boolean) => Promise<void>;
 
   // Orders
@@ -1460,6 +1472,161 @@ const isValidUUID = (id: string | null | undefined): boolean => {
     setInvitations(prev => prev.map(inv => inv.id === invitationId ? { ...inv, status: 'revoked' } : inv));
   };
 
+  const deleteInvitation = async (invitationId: string) => {
+    if (!isAdminUser(currentMember?.role_code)) {
+      throw new Error('Apenas administradores podem excluir convites.');
+    }
+
+    setInvitations(prev => prev.filter(i => i.id !== invitationId));
+
+    const client = getSupabaseClient();
+    if (client && organization?.id) {
+      try {
+        await client
+          .from('member_invitations')
+          .delete()
+          .eq('id', invitationId)
+          .eq('organization_id', organization.id);
+      } catch (err) {
+        console.warn('Supabase delete invitation warning:', err);
+      }
+    }
+  };
+
+  const createMemberDirect = async (params: {
+    email: string;
+    fullName: string;
+    roleCode: UserRole;
+    partnerPercentage?: number;
+    scopeType?: 'manufacturer' | 'customer' | 'partner';
+    scopeId?: string;
+    scopeName?: string;
+  }): Promise<Member> => {
+    if (!isAdminUser(currentMember?.role_code)) {
+      throw new Error('Acesso negado: apenas administradores podem criar membros.');
+    }
+
+    const orgId = organization?.id || ILEX_CANONICAL_ORG_ID;
+    const newUserId = crypto.randomUUID();
+    const newMember: Member = {
+      organization_id: orgId,
+      user_id: newUserId,
+      role_code: params.roleCode,
+      full_name: params.fullName.trim(),
+      email: params.email.trim().toLowerCase(),
+      partner_percentage: params.partnerPercentage || 0,
+      is_active: true,
+      scope_manufacturer_id: params.scopeType === 'manufacturer' ? params.scopeId : undefined,
+      scope_manufacturer_name: params.scopeType === 'manufacturer' ? params.scopeName : undefined,
+      scope_customer_id: params.scopeType === 'customer' ? params.scopeId : undefined,
+      scope_customer_name: params.scopeType === 'customer' ? params.scopeName : undefined,
+      scopes: params.scopeId && params.scopeType ? [{
+        id: crypto.randomUUID(),
+        organization_id: orgId,
+        user_id: newUserId,
+        scope_type: params.scopeType,
+        scope_id: params.scopeId,
+        created_at: new Date().toISOString()
+      }] : [],
+    };
+
+    setMembers(prev => {
+      const next = [newMember, ...prev.filter(m => m.email.toLowerCase() !== newMember.email.toLowerCase())];
+      try { localStorage.setItem(`ilex_real_members_${orgId}`, JSON.stringify(next)); } catch {}
+      return next;
+    });
+
+    const client = getSupabaseClient();
+    if (client && organization?.id) {
+      try {
+        await client.from('memberships').upsert({
+          organization_id: orgId,
+          user_id: newUserId,
+          role_code: newMember.role_code,
+          full_name: newMember.full_name,
+          email: newMember.email,
+          partner_percentage: newMember.partner_percentage,
+          is_active: true,
+          updated_at: new Date().toISOString()
+        });
+      } catch (err) {
+        console.warn('Supabase direct membership insert warning:', err);
+      }
+    }
+
+    return newMember;
+  };
+
+  const updateMember = async (userId: string, updates: Partial<Member>) => {
+    if (!isAdminUser(currentMember?.role_code)) {
+      throw new Error('Apenas administradores podem editar membros.');
+    }
+
+    const orgId = organization?.id || ILEX_CANONICAL_ORG_ID;
+    const now = new Date().toISOString();
+
+    setMembers(prev => {
+      const next = prev.map(m => (m.user_id === userId ? { ...m, ...updates, updated_at: now } : m));
+      try { localStorage.setItem(`ilex_real_members_${orgId}`, JSON.stringify(next)); } catch {}
+      return next;
+    });
+
+    if (currentMember?.user_id === userId) {
+      setCurrentMember(prev => prev ? { ...prev, ...updates } : null);
+    }
+
+    const client = getSupabaseClient();
+    if (client && organization?.id) {
+      try {
+        const payload: any = { updated_at: now };
+        if (updates.role_code !== undefined) payload.role_code = updates.role_code;
+        if (updates.full_name !== undefined) payload.full_name = updates.full_name;
+        if (updates.email !== undefined) payload.email = updates.email;
+        if (updates.partner_percentage !== undefined) payload.partner_percentage = updates.partner_percentage;
+        if (updates.is_active !== undefined) payload.is_active = updates.is_active;
+
+        await client
+          .from('memberships')
+          .update(payload)
+          .eq('user_id', userId)
+          .eq('organization_id', orgId);
+      } catch (err) {
+        console.warn('Supabase update membership warning:', err);
+      }
+    }
+  };
+
+  const deleteMember = async (userId: string) => {
+    if (!isAdminUser(currentMember?.role_code)) {
+      throw new Error('Apenas administradores podem excluir membros.');
+    }
+
+    if (userId === currentMember?.user_id) {
+      throw new Error('Operação bloqueada: não é permitido excluir o próprio usuário logado.');
+    }
+
+    const orgId = organization?.id || ILEX_CANONICAL_ORG_ID;
+
+    setMembers(prev => {
+      const next = prev.filter(m => m.user_id !== userId);
+      try { localStorage.setItem(`ilex_real_members_${orgId}`, JSON.stringify(next)); } catch {}
+      return next;
+    });
+
+    const client = getSupabaseClient();
+    if (client && organization?.id) {
+      try {
+        await client
+          .from('memberships')
+          .delete()
+          .eq('user_id', userId)
+          .eq('organization_id', orgId);
+      } catch (err) {
+        console.warn('Supabase delete membership warning:', err);
+      }
+    }
+  };
+
   const toggleMemberActive = async (userId: string, isActive: boolean) => {
     if (!isAdminUser(currentMember?.role_code)) {
       throw new Error('Apenas administradores podem alterar o status de membros.');
@@ -1640,7 +1807,11 @@ const isValidUUID = (id: string | null | undefined): boolean => {
         members,
         invitations,
         inviteUser,
+        createMemberDirect,
+        updateMember,
+        deleteMember,
         revokeInvitation,
+        deleteInvitation,
         toggleMemberActive,
         orders,
         addOrder,
