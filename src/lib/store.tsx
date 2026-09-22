@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { Customer, Manufacturer, Member, Organization, AdvisoryPlan, UserRole, MemberInvitation, Order, OrderStatus } from '../types';
+import { Customer, Manufacturer, Member, Organization, AdvisoryPlan, UserRole, MemberInvitation, Order, OrderStatus, isAdminUser } from '../types';
 import {
   INITIAL_ORGANIZATION,
   INITIAL_MEMBERS,
@@ -24,6 +24,7 @@ export interface CRMContextType {
   session: Session | null;
   currentMember: Member | null; // NULL during initial loading or when not logged in
   organization: Organization | null;
+  updateOrganization: (updates: Partial<Organization>) => Promise<void>;
   isLoadingAuth: boolean;
   authError: string | null;
   signIn: (email: string, password: string) => Promise<void>;
@@ -1173,13 +1174,15 @@ const isValidUUID = (id: string | null | undefined): boolean => {
     scopeId?: string;
     scopeName?: string;
   }): Promise<MemberInvitation> => {
-    if (currentMember?.role_code !== 'socio_admin_master') {
-      throw new Error('Acesso negado: apenas o perfil Sócio Admin Master pode convidar novos usuários.');
+    if (!isAdminUser(currentMember?.role_code)) {
+      throw new Error('Acesso negado: apenas administradores podem convidar novos usuários.');
     }
 
     const now = new Date().toISOString();
     const token = config.isDemoMode ? 'demo-invitation' : '';
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    const inviterId = currentMember?.user_id || user?.id || 'admin';
 
     const newInvite: MemberInvitation = {
       id: crypto.randomUUID(),
@@ -1192,7 +1195,7 @@ const isValidUUID = (id: string | null | undefined): boolean => {
       scope_id: params.scopeId,
       scope_name: params.scopeName,
       status: 'pending',
-      invited_by: currentMember.user_id,
+      invited_by: inviterId,
       token,
       expires_at: expiresAt,
       created_at: now,
@@ -1249,7 +1252,7 @@ const isValidUUID = (id: string | null | undefined): boolean => {
         scope_type: newInvite.scope_type,
         scope_id: newInvite.scope_id,
         status: 'pending',
-        invited_by: currentMember.user_id,
+        invited_by: inviterId,
         token: generatedToken,
         expires_at: expiresAt,
       })
@@ -1273,8 +1276,8 @@ const isValidUUID = (id: string | null | undefined): boolean => {
   };
 
   const revokeInvitation = async (invitationId: string) => {
-    if (currentMember?.role_code !== 'socio_admin_master') {
-      throw new Error('Apenas Sócio Admin Master pode revogar convites.');
+    if (!isAdminUser(currentMember?.role_code)) {
+      throw new Error('Apenas administradores podem revogar convites.');
     }
 
     if (config.isDemoMode) {
@@ -1301,8 +1304,8 @@ const isValidUUID = (id: string | null | undefined): boolean => {
   };
 
   const toggleMemberActive = async (userId: string, isActive: boolean) => {
-    if (currentMember?.role_code !== 'socio_admin_master') {
-      throw new Error('Apenas Sócio Admin Master pode alterar o status de membros.');
+    if (!isAdminUser(currentMember?.role_code)) {
+      throw new Error('Apenas administradores podem alterar o status de membros.');
     }
 
     if (userId === currentMember?.user_id) {
@@ -1409,6 +1412,25 @@ const isValidUUID = (id: string | null | undefined): boolean => {
     });
   };
 
+  const updateOrganization = async (updates: Partial<Organization>) => {
+    setOrganization(prev => {
+      if (!prev) return null;
+      const updated = { ...prev, ...updates, updated_at: new Date().toISOString() };
+      try { localStorage.setItem('ilex_organization_profile', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+
+    if (!config.isDemoMode && organization?.id) {
+      const client = getSupabaseClient();
+      if (client) {
+        await client
+          .from('organizations')
+          .update(updates)
+          .eq('id', organization.id);
+      }
+    }
+  };
+
   const refreshData = async () => {
     if (config.isDemoMode) {
       initDemoMode();
@@ -1424,6 +1446,7 @@ const isValidUUID = (id: string | null | undefined): boolean => {
         session,
         currentMember,
         organization,
+        updateOrganization,
         isLoadingAuth,
         authError,
         signIn,

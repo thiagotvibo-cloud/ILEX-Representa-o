@@ -14,9 +14,9 @@ import {
   ArrowRight,
   Building2,
   Briefcase,
-  HelpCircle,
   Eye,
   EyeOff,
+  Factory,
 } from 'lucide-react';
 import { SUPABASE_COMPLETE_SETUP_SQL } from '../../lib/supabaseCompleteScript';
 
@@ -26,10 +26,8 @@ export const LoginPage: React.FC = () => {
     activateFounderSession,
     authError,
     clearError,
-    isConfigured,
     supabaseUrl,
     toggleDemoMode,
-    isDemoMode,
   } = useCRM();
 
   const [email, setEmail] = useState('thiagotv.ibo@gmail.com');
@@ -38,7 +36,6 @@ export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [copiedScript, setCopiedScript] = useState(false);
-  const [showSqlDrawer, setShowSqlDrawer] = useState(false);
 
   const copyCompleteScript = () => {
     navigator.clipboard.writeText(SUPABASE_COMPLETE_SETUP_SQL);
@@ -68,7 +65,7 @@ export const LoginPage: React.FC = () => {
     try {
       await activateFounderSession();
     } catch (err: any) {
-      setLocalError(err?.message || 'Falha ao ativar sessão de fundador.');
+      setLocalError(err?.message || 'Falha ao ativar sessão de administrador.');
     } finally {
       setLoading(false);
     }
@@ -88,12 +85,14 @@ export const LoginPage: React.FC = () => {
         </div>
 
         <div className="relative z-10 space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#3E4A32] to-[#1C1A17] flex items-center justify-center text-white border border-[#A78A63]/40 shadow-md">
-              <span className="font-extrabold text-xl tracking-tight text-[#E8DCC9]">IX</span>
-            </div>
+          <div className="flex items-center gap-4">
+            <img
+              src="/assets/logo-05-dourada.svg"
+              alt="Logotipo ILEX Dourada"
+              className="w-14 h-14 object-contain shrink-0 drop-shadow-md"
+            />
             <div>
-              <h1 className="font-extrabold text-lg tracking-wider text-white">ILEX CRM</h1>
+              <h1 className="font-extrabold text-xl tracking-wider text-white">ILEX COMERCIAL</h1>
               <p className="text-[10px] text-[#A78A63] tracking-widest uppercase font-semibold">
                 Representação &amp; Assessoria B2B
               </p>
@@ -105,7 +104,7 @@ export const LoginPage: React.FC = () => {
               Plataforma Comercial de Alta Performance
             </h2>
             <p className="text-sm text-stone-300 leading-relaxed">
-              Gestão integrada de representadas fabris, carteira de clientes B2B, pedidos e divisão de comissões societárias com governança RLS.
+              Gestão integrada de indústrias representadas, carteira de clientes B2B, emissão de pedidos, cálculo de comissões e acompanhamento de faturamento.
             </p>
           </div>
 
@@ -113,19 +112,19 @@ export const LoginPage: React.FC = () => {
             <div className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10 text-xs">
               <ShieldCheck size={16} className="text-[#A78A63] shrink-0 mt-0.5" />
               <div>
-                <strong className="text-white">Segurança RLS Supabase</strong>
+                <strong className="text-white">Segurança &amp; Acesso por Perfil</strong>
                 <p className="text-[11px] text-stone-300 mt-0.5">
-                  Isolamento multitenant estrito por organização, indústrias e associados.
+                  Isolamento seguro para Administradores, Representadas e Representantes.
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10 text-xs">
-              <Briefcase size={16} className="text-[#A78A63] shrink-0 mt-0.5" />
+              <Factory size={16} className="text-[#A78A63] shrink-0 mt-0.5" />
               <div>
-                <strong className="text-white">Contrato Societário 50/50</strong>
+                <strong className="text-white">Gestão Industrial Completa</strong>
                 <p className="text-[11px] text-stone-300 mt-0.5">
-                  Cálculo automático de comissões por fábrica e sócios fundadores.
+                  Controle de tabelas de preços, prazos médios, comissionamento e ciclos de recompra.
                 </p>
               </div>
             </div>
@@ -134,7 +133,7 @@ export const LoginPage: React.FC = () => {
 
         <div className="relative z-10 pt-6 border-t border-white/10 flex items-center justify-between text-[11px] text-stone-400">
           <span>ILEX Comercial Ltda • CNPJ 42.195.882/0001-09</span>
-          <span className="font-mono text-stone-300">v2.4 PostgreSQL</span>
+          <span className="font-mono text-stone-300">Sistema Comercial</span>
         </div>
       </div>
 
@@ -142,10 +141,12 @@ export const LoginPage: React.FC = () => {
       <div className="flex-1 flex flex-col justify-center items-center p-6 md:p-12 overflow-y-auto">
         <div className="max-w-md w-full space-y-6">
           {/* Mobile Brand Header */}
-          <div className="lg:hidden flex items-center gap-3 pb-2 border-b border-[#E2DDD5]">
-            <div className="w-10 h-10 rounded-lg bg-[#2C3524] flex items-center justify-center text-white border border-[#A78A63]/40">
-              <span className="font-extrabold text-lg text-[#E8DCC9]">IX</span>
-            </div>
+          <div className="lg:hidden flex items-center gap-3 pb-3 border-b border-[#E2DDD5]">
+            <img
+              src="/assets/logo-06-verde.svg"
+              alt="Logotipo ILEX"
+              className="w-11 h-11 object-contain shrink-0"
+            />
             <div>
               <h1 className="font-bold text-base text-[#1C1A17]">ILEX CRM</h1>
               <p className="text-[10px] text-stone-500 uppercase tracking-wider">Representação &amp; Assessoria</p>
@@ -156,7 +157,7 @@ export const LoginPage: React.FC = () => {
           <div className="space-y-1">
             <h2 className="text-xl font-bold text-[#1C1A17] tracking-tight">Entrar na Plataforma</h2>
             <p className="text-xs text-stone-600">
-              Acesse com suas credenciais do Supabase Auth ou utilize o acesso de Sócio Fundador.
+              Acesse com seu e-mail cadastrado ou utilize o acesso de Administrador.
             </p>
           </div>
 
@@ -240,19 +241,19 @@ export const LoginPage: React.FC = () => {
               </span>
             </div>
 
-            {/* Quick Access for Founder */}
+            {/* Quick Access for Admin */}
             <div className="p-3.5 bg-gradient-to-br from-[#EDF1EA] to-[#FAF9F5] rounded-xl border border-[#3E4A32]/20 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#3E4A32]">
                   <Sparkles size={15} className="text-[#A78A63]" />
-                  <span>Acesso Imediato Sócio Fundador</span>
+                  <span>Acesso Direto Administrador</span>
                 </div>
-                <span className="px-1.5 py-0.5 bg-[#3E4A32] text-white rounded text-[9px] font-bold">
-                  50% Sócio
+                <span className="px-2 py-0.5 bg-[#3E4A32] text-white rounded text-[9px] font-bold uppercase tracking-wider">
+                  Admin
                 </span>
               </div>
               <p className="text-[11px] text-stone-700 leading-relaxed">
-                Inicia a sessão direta como <strong>Thiago</strong> (Sócio Admin Master) na organização ILEX Comercial Ltda.
+                Inicia a sessão direta como Administrador na organização ILEX Comercial Ltda.
               </p>
               <button
                 type="button"
@@ -261,7 +262,7 @@ export const LoginPage: React.FC = () => {
                 className="w-full py-2.5 bg-[#3E4A32] hover:bg-[#2C3524] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                 id="btn-login-founder"
               >
-                <span>Entrar como Thiago (Sócio Admin Master)</span>
+                <span>Entrar como Administrador</span>
                 <ArrowRight size={14} className="text-[#A78A63]" />
               </button>
             </div>
@@ -272,7 +273,7 @@ export const LoginPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleEnterDemo}
-                className="text-[11px] font-semibold text-[#3E4A32] hover:underline"
+                className="text-[11px] font-semibold text-[#3E4A32] hover:underline cursor-pointer"
               >
                 Ativar Modo Demonstração
               </button>
@@ -289,14 +290,14 @@ export const LoginPage: React.FC = () => {
               <button
                 type="button"
                 onClick={copyCompleteScript}
-                className="flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-stone-100 text-[#3E4A32] border border-[#E2DDD5] rounded text-[10px] font-bold transition-colors shadow-2xs"
+                className="flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-stone-100 text-[#3E4A32] border border-[#E2DDD5] rounded text-[10px] font-bold transition-colors shadow-2xs cursor-pointer"
               >
                 {copiedScript ? <CheckCircle2 size={12} className="text-emerald-600" /> : <Copy size={12} />}
                 <span>{copiedScript ? 'SQL Copiado!' : 'Copiar Script SQL Completo'}</span>
               </button>
             </div>
             <p className="text-[11px] text-stone-500 leading-relaxed">
-              Projeto: <code className="font-mono text-stone-700 font-semibold">{supabaseUrl ? new URL(supabaseUrl).hostname : 'Supabase Conectado'}</code>. Execute o script no SQL Editor para criar as 8 tabelas e políticas RLS.
+              Projeto: <code className="font-mono text-stone-700 font-semibold">{supabaseUrl ? new URL(supabaseUrl).hostname : 'Supabase Conectado'}</code>. Execute o script no SQL Editor para criar as tabelas e políticas de acesso.
             </p>
           </div>
         </div>

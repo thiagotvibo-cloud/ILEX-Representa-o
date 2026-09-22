@@ -1,14 +1,17 @@
-// ILEX CRM - Core Domain Types
+// ILEX CRM - Core Domain Types (Admin, Representada, Representante)
 
 export type UserRole =
-  | 'socio_admin_master' // Thiago (administração total, usuários, banco, auditoria)
-  | 'socio_admin'        // Julienne (gestão comercial e operacional, sem banco/configuração de segurança)
-  | 'comercial'          // Comercial (clientes, contatos, agenda, pipeline e pedidos)
-  | 'financeiro'         // Financeiro (faturamento, recebimentos, comissões, títulos e relatórios)
-  | 'leitura'            // Somente leitura (não grava, não edita)
-  | 'associado'          // Externo: acesso somente à sua empresa/carteira
-  | 'representada_admin' // Externo: gestão da fábrica representada vinculada
-  | 'representada_leitura'; // Externo: consulta da fábrica representada vinculada
+  | 'admin'              // Administrador Geral (gestão total do sistema, equipe, pedidos, clientes)
+  | 'representada'       // Representada (fábrica/indústria parceira vinculada)
+  | 'representante'      // Representante Comercial (vendas, clientes e emissão de pedidos)
+  | 'socio_admin_master' // Alias legado -> admin
+  | 'socio_admin'        // Alias legado -> admin
+  | 'comercial'          // Alias legado -> representante
+  | 'financeiro'         // Alias legado -> admin
+  | 'leitura'            // Alias legado -> representante
+  | 'associado'          // Alias legado -> representante
+  | 'representada_admin' // Alias legado -> representada
+  | 'representada_leitura'; // Alias legado -> representada
 
 export interface MemberScope {
   id: string;
@@ -26,7 +29,7 @@ export interface MemberInvitation {
   email: string;
   full_name: string;
   role_code: UserRole;
-  partner_percentage: number;
+  partner_percentage?: number;
   scope_type?: 'manufacturer' | 'customer' | 'partner';
   scope_id?: string;
   scope_name?: string;
@@ -47,6 +50,8 @@ export interface Organization {
   city: string;
   state: string;
   country: string;
+  phone?: string;
+  email?: string;
   settings?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -59,7 +64,7 @@ export interface Member {
   full_name: string;
   email: string;
   avatar_url?: string;
-  partner_percentage: number;
+  partner_percentage?: number;
   is_active: boolean;
   scopes?: MemberScope[];
   scope_manufacturer_id?: string;
@@ -68,94 +73,114 @@ export interface Member {
   scope_customer_name?: string;
 }
 
-// RBAC Role Helpers
+// RBAC Role Helpers (Admin, Representada, Representante)
 export const ROLE_DEFINITIONS: Record<UserRole, { label: string; description: string; isExternal: boolean }> = {
+  admin: {
+    label: 'Administrador',
+    description: 'Acesso completo à gestão de clientes, fábricas, pedidos, relatórios e equipe.',
+    isExternal: false,
+  },
+  representada: {
+    label: 'Representada (Fábrica)',
+    description: 'Acesso aos produtos, pedidos e faturamento da indústria representada vinculada.',
+    isExternal: true,
+  },
+  representante: {
+    label: 'Representante Comercial',
+    description: 'Acesso à carteira de clientes, pipeline de oportunidades e emissão de pedidos.',
+    isExternal: false,
+  },
+  // Aliases para compatibilidade
   socio_admin_master: {
-    label: 'Sócio Admin Master (Thiago)',
-    description: 'Acesso irrestrito a todas as operações, segurança, banco de dados, auditoria e gestão de usuários.',
+    label: 'Administrador',
+    description: 'Acesso completo à gestão de clientes, fábricas, pedidos, relatórios e equipe.',
     isExternal: false,
   },
   socio_admin: {
-    label: 'Sócio Administrador (Julienne)',
-    description: 'Gestão comercial, financeira e operacional executiva. Sem acesso a configurações de banco e segurança.',
+    label: 'Administrador',
+    description: 'Acesso completo à gestão de clientes, fábricas, pedidos, relatórios e equipe.',
     isExternal: false,
   },
   comercial: {
-    label: 'Equipe Comercial',
-    description: 'Gestão de clientes, contatos, pipeline de vendas, agenda e emissão de orçamentos e pedidos.',
+    label: 'Representante Comercial',
+    description: 'Acesso à carteira de clientes, pipeline de oportunidades e emissão de pedidos.',
     isExternal: false,
   },
   financeiro: {
-    label: 'Financeiro & Comissões',
-    description: 'Gestão de faturamento, liquidação de recebíveis, cálculo de comissões e relatórios financeiros.',
+    label: 'Administrador',
+    description: 'Acesso à gestão financeira, faturamento e pedidos.',
     isExternal: false,
   },
   leitura: {
-    label: 'Consulta (Somente Leitura)',
-    description: 'Acesso de visualização restrito; bloqueado para criação, edição ou exclusão de registros.',
+    label: 'Representante Comercial',
+    description: 'Consulta de pedidos e clientes.',
     isExternal: false,
   },
   associado: {
-    label: 'Associado Externo',
-    description: 'Acesso estrito à sua empresa/carteira atribuída e evolução compartilhada pela ILEX.',
-    isExternal: true,
+    label: 'Representante Comercial',
+    description: 'Acesso à carteira de clientes e pedidos.',
+    isExternal: false,
   },
   representada_admin: {
-    label: 'Representada Admin (Fábrica)',
-    description: 'Gestão da sua fábrica atribuída, seus produtos, pedidos, faturamento e comissões devidas.',
+    label: 'Representada (Fábrica)',
+    description: 'Acesso aos produtos, pedidos e faturamento da fábrica vinculada.',
     isExternal: true,
   },
   representada_leitura: {
-    label: 'Representada Consulta (Fábrica)',
-    description: 'Consulta da sua fábrica atribuída, produtos, pedidos e comissões devidas (somente leitura).',
+    label: 'Representada (Fábrica)',
+    description: 'Consulta aos produtos e pedidos da fábrica vinculada.',
     isExternal: true,
   },
 };
 
+export function isAdminUser(role?: UserRole): boolean {
+  if (!role) return false;
+  return role === 'admin' || role === 'socio_admin_master' || role === 'socio_admin' || role === 'financeiro';
+}
+
 export function canManageUsersAndSecurity(role?: UserRole): boolean {
-  return role === 'socio_admin_master';
+  return isAdminUser(role);
 }
 
 export function canManageCommercial(role?: UserRole): boolean {
-  return role === 'socio_admin_master' || role === 'socio_admin' || role === 'comercial';
+  if (!role) return false;
+  return isAdminUser(role) || role === 'representante' || role === 'comercial' || role === 'associado';
 }
 
 export function canManageFinancial(role?: UserRole): boolean {
-  return role === 'socio_admin_master' || role === 'socio_admin' || role === 'financeiro';
+  return isAdminUser(role);
 }
 
 export function canViewCommissions(role?: UserRole): boolean {
   if (!role) return false;
-  return ['socio_admin_master', 'socio_admin', 'financeiro', 'representada_admin', 'representada_leitura'].includes(role);
+  return true;
 }
 
 export function canWriteData(role?: UserRole): boolean {
   if (!role) return false;
-  return ['socio_admin_master', 'socio_admin', 'comercial', 'financeiro', 'representada_admin'].includes(role);
+  return isAdminUser(role) || role === 'representante' || role === 'comercial' || role === 'representada' || role === 'representada_admin';
 }
 
 export function canViewCostsAndMargins(role?: UserRole): boolean {
-  if (!role) return false;
-  return ['socio_admin_master', 'socio_admin', 'financeiro'].includes(role);
+  return isAdminUser(role);
 }
 
 export function canExportReports(role?: UserRole): boolean {
-  if (!role) return false;
-  return ['socio_admin_master', 'socio_admin', 'financeiro'].includes(role);
+  return isAdminUser(role);
 }
 
 export function isExternalUser(role?: UserRole): boolean {
   if (!role) return false;
-  return ['associado', 'representada_admin', 'representada_leitura'].includes(role);
+  return role === 'representada' || role === 'representada_admin' || role === 'representada_leitura';
 }
 
 export function isRepresentadaUser(role?: UserRole): boolean {
   if (!role) return false;
-  return ['representada_admin', 'representada_leitura'].includes(role);
+  return role === 'representada' || role === 'representada_admin' || role === 'representada_leitura';
 }
 
 export function isAssociadoUser(role?: UserRole): boolean {
-  return role === 'associado';
+  return false;
 }
 
 export interface CustomerAddress {

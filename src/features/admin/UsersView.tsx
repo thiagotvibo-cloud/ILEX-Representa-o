@@ -41,14 +41,13 @@ export const UsersView: React.FC = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [roleCode, setRoleCode] = useState<UserRole>('comercial');
-  const [partnerPercentage, setPartnerPercentage] = useState<number>(0);
+  const [roleCode, setRoleCode] = useState<UserRole>('representante');
   const [selectedScopeId, setSelectedScopeId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Security check: Only socio_admin_master can access this view
+  // Security check: Only Admin can access this view
   const hasAccess = canManageUsersAndSecurity(currentMember?.role_code);
 
   if (!hasAccess) {
@@ -58,9 +57,9 @@ export const UsersView: React.FC = () => {
           <div className="w-14 h-14 mx-auto rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 mb-4">
             <Lock size={26} />
           </div>
-          <h2 className="text-xl font-bold text-[#26332D] mb-2">Acesso Restrito ao Master</h2>
+          <h2 className="text-xl font-bold text-[#26332D] mb-2">Acesso Restrito ao Administrador</h2>
           <p className="text-sm text-stone-500 max-w-md mx-auto mb-6">
-            A gestão de usuários, atribuição de perfis RBAC, auditoria de segurança e envio de convites são funcionalidades exclusivas do perfil <strong>Sócio Admin Master (Thiago)</strong>.
+            A gestão de usuários, convites e perfis de acesso são exclusivos para contas de <strong>Administrador</strong>.
           </p>
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-stone-100 border border-[#E5E9E5] text-xs text-stone-600">
             <span>Seu perfil atual:</span>
@@ -76,8 +75,7 @@ export const UsersView: React.FC = () => {
   const handleOpenModal = () => {
     setFullName('');
     setEmail('');
-    setRoleCode('comercial');
-    setPartnerPercentage(0);
+    setRoleCode('representante');
     setSelectedScopeId('');
     setFormError(null);
     setSuccessMessage(null);
@@ -87,11 +85,6 @@ export const UsersView: React.FC = () => {
   const handleRoleChange = (newRole: UserRole) => {
     setRoleCode(newRole);
     setSelectedScopeId('');
-    if (newRole === 'socio_admin_master' || newRole === 'socio_admin') {
-      setPartnerPercentage(50);
-    } else {
-      setPartnerPercentage(0);
-    }
   };
 
   const handleInviteSubmit = async (e: React.FormEvent) => {
@@ -109,11 +102,6 @@ export const UsersView: React.FC = () => {
       return;
     }
 
-    if (isAssociadoUser(roleCode) && !selectedScopeId) {
-      setFormError('Para perfis de associado, o vínculo com a carteira/empresa é obrigatório.');
-      return;
-    }
-
     let scopeType: 'manufacturer' | 'customer' | undefined;
     let scopeName: string | undefined;
 
@@ -121,10 +109,6 @@ export const UsersView: React.FC = () => {
       scopeType = 'manufacturer';
       const mfr = manufacturers.find(m => m.id === selectedScopeId);
       scopeName = mfr ? mfr.name : undefined;
-    } else if (isAssociadoUser(roleCode)) {
-      scopeType = 'customer';
-      const cust = customers.find(c => c.id === selectedScopeId);
-      scopeName = cust ? cust.legal_name : undefined;
     }
 
     setIsSubmitting(true);
@@ -133,13 +117,12 @@ export const UsersView: React.FC = () => {
         email: email.trim(),
         fullName: fullName.trim(),
         roleCode,
-        partnerPercentage: Number(partnerPercentage) || 0,
         scopeType,
         scopeId: selectedScopeId || undefined,
         scopeName,
       });
 
-      setSuccessMessage(`Convite enviado com sucesso para ${email}! O status ficará pendente até o aceite e primeiro login do usuário.`);
+      setSuccessMessage(`Convite enviado com sucesso para ${email}!`);
       setIsInviteModalOpen(false);
     } catch (err: any) {
       setFormError(err?.message || 'Falha ao emitir convite de usuário.');
@@ -189,7 +172,7 @@ export const UsersView: React.FC = () => {
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#355C4D]/10 text-[#355C4D] border border-[#355C4D]/20 flex items-center gap-1">
               <ShieldCheck size={13} />
-              Sócio Admin Master
+              Administrador
             </span>
           </div>
           <p className="text-xs text-stone-500 mt-1">
@@ -279,9 +262,6 @@ export const UsersView: React.FC = () => {
                         <span className="font-medium text-[#355C4D]">
                           {ROLE_DEFINITIONS[inv.role_code]?.label || inv.role_code}
                         </span>
-                        {inv.partner_percentage > 0 && (
-                          <span className="ml-1 text-[10px] text-stone-500">({inv.partner_percentage}%)</span>
-                        )}
                       </td>
                       <td className="py-3.5 px-4 text-stone-600">
                         {inv.scope_name ? (
@@ -339,11 +319,10 @@ export const UsersView: React.FC = () => {
             <thead>
               <tr className="bg-stone-50/80 border-b border-[#E5E9E5] text-stone-500 font-semibold">
                 <th className="py-3 px-4">Membro</th>
-                <th className="py-3 px-4">Perfil RBAC</th>
+                <th className="py-3 px-4">Perfil</th>
                 <th className="py-3 px-4">Escopo Vinculado</th>
-                <th className="py-3 px-4">Participação</th>
                 <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-right">Ação Master</th>
+                <th className="py-3 px-4 text-right">Ação</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E5E9E5]">
@@ -373,9 +352,6 @@ export const UsersView: React.FC = () => {
                       <span className="font-medium text-[#355C4D] block">
                         {ROLE_DEFINITIONS[memberItem.role_code]?.label || memberItem.role_code}
                       </span>
-                      <span className="text-[10px] text-stone-400 font-mono">
-                        {memberItem.role_code}
-                      </span>
                     </td>
                     <td className="py-3.5 px-4 text-stone-600">
                       {memberItem.scope_manufacturer_name ? (
@@ -390,13 +366,6 @@ export const UsersView: React.FC = () => {
                         </span>
                       ) : (
                         <span className="text-stone-400 text-[11px]">Geral da Organização</span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-stone-600">
-                      {memberItem.partner_percentage > 0 ? (
-                        <span className="font-semibold text-[#26332D]">{memberItem.partner_percentage}%</span>
-                      ) : (
-                        <span className="text-stone-400">—</span>
                       )}
                     </td>
                     <td className="py-3.5 px-4 text-center">
@@ -500,21 +469,16 @@ export const UsersView: React.FC = () => {
 
               <div>
                 <label className="block text-[11px] font-semibold text-stone-700 mb-1">
-                  Perfil de Acesso (RBAC) *
+                  Perfil de Acesso *
                 </label>
                 <select
                   value={roleCode}
                   onChange={e => handleRoleChange(e.target.value as UserRole)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-[#E5E9E5] focus:outline-none focus:border-[#355C4D] text-xs bg-white"
                 >
-                  <option value="comercial">Equipe Comercial (Clientes, Pipeline, Pedidos)</option>
-                  <option value="financeiro">Financeiro (Faturamento, Comissões e Relatórios)</option>
-                  <option value="leitura">Consulta (Somente Leitura Geral)</option>
-                  <option value="socio_admin">Sócio Administrador (Julienne - Gestão Geral sem BD/Segurança)</option>
-                  <option value="socio_admin_master">Sócio Admin Master (Thiago - Administração Total)</option>
-                  <option value="representada_admin">Representada Admin (Fábrica - Gestão Própria)</option>
-                  <option value="representada_leitura">Representada Consulta (Fábrica - Somente Leitura)</option>
-                  <option value="associado">Associado Externo (Carteira Própria Vinculada)</option>
+                  <option value="admin">Administrador (Acesso total)</option>
+                  <option value="representada">Representada / Fábrica (Acesso aos produtos e pedidos da marca)</option>
+                  <option value="representante">Representante Comercial (Acesso a clientes, funil e pedidos)</option>
                 </select>
                 <p className="text-[10px] text-stone-500 mt-1">
                   {ROLE_DEFINITIONS[roleCode]?.description}
@@ -529,7 +493,7 @@ export const UsersView: React.FC = () => {
                     Fábrica Representada Obrigatória *
                   </label>
                   <p className="text-[10px] text-amber-800">
-                    O usuário terá acesso restrito exclusivamente aos dados desta fábrica. Métricas de outras marcas jamais serão misturadas.
+                    O usuário terá acesso restrito exclusivamente aos dados desta fábrica.
                   </p>
                   <select
                     required
@@ -540,57 +504,10 @@ export const UsersView: React.FC = () => {
                     <option value="">Selecione a Fábrica Representada...</option>
                     {manufacturers.map(m => (
                       <option key={m.id} value={m.id}>
-                        {m.name} ({m.currency || 'BRL'}) — Regra: {m.commission_trigger === 'billing' ? 'Faturamento' : 'Recebimento'}
+                        {m.name} ({m.currency || 'BRL'})
                       </option>
                     ))}
                   </select>
-                </div>
-              )}
-
-              {/* Conditional: Associado Customer/Wallet Selector */}
-              {isAssociadoUser(roleCode) && (
-                <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-1.5">
-                  <label className="block text-[11px] font-bold text-emerald-900 flex items-center gap-1.5">
-                    <Building2 size={13} className="text-emerald-700" />
-                    Cliente / Carteira Atribuída Obrigatória *
-                  </label>
-                  <p className="text-[10px] text-emerald-800">
-                    O associado visualizará unicamente pedidos, evolução e relatórios desta empresa atribuída.
-                  </p>
-                  <select
-                    required
-                    value={selectedScopeId}
-                    onChange={e => setSelectedScopeId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-emerald-300 bg-white text-xs font-semibold"
-                  >
-                    <option value="">Selecione a Empresa / Cliente Associado...</option>
-                    {customers.map(c => (
-                      <option key={c.id} value={c.id}>
-                        {c.legal_name} {c.trade_name ? `(${c.trade_name})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Partner percentage */}
-              {(roleCode === 'socio_admin_master' || roleCode === 'socio_admin' || roleCode === 'associado') && (
-                <div>
-                  <label className="block text-[11px] font-semibold text-stone-700 mb-1">
-                    Percentual de Participação / Comissão (%)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.5"
-                    value={partnerPercentage}
-                    onChange={e => setPartnerPercentage(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#E5E9E5] focus:outline-none focus:border-[#355C4D] text-xs bg-[#F7F8F6]"
-                  />
-                  <p className="text-[10px] text-stone-500 mt-1">
-                    Ex: 50% para sócios fundadores (Julienne e Thiago) ou percentual contratual para associados.
-                  </p>
                 </div>
               )}
 

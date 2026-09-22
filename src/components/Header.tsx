@@ -133,6 +133,11 @@ export const Header: React.FC = () => {
         <div className="flex items-center justify-between gap-4">
           {/* Left: Organization & Profile Context */}
           <div className="flex items-center gap-3 overflow-hidden">
+            <img
+              src="/assets/logo-06-verde.svg"
+              alt="Logotipo ILEX"
+              className="w-9 h-9 object-contain shrink-0"
+            />
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-sm md:text-base font-bold text-[#26332D] truncate">

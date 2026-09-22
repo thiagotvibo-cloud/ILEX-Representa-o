@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useCRM } from '../lib/store';
 import { AuthModal } from '../features/auth/AuthModal';
+import { IlexLogo } from './IlexLogo';
 import {
   ROLE_DEFINITIONS,
   canManageUsersAndSecurity,
@@ -93,15 +94,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
       items.push({ to: '/comissoes', label: 'Comissões & Recebimento', icon: DollarSign });
     }
 
-    if (roleCode === 'socio_admin_master' || roleCode === 'socio_admin' || roleCode === 'financeiro') {
-      items.push({ to: '/assessoria', label: 'Assessoria & Planos', icon: Briefcase });
-    }
-
-    // Only socio_admin_master can access Users & Accesses and Database Settings
     if (isMaster) {
-      items.push({ to: '/admin/usuarios', label: 'Admin: Usuários & Acessos', icon: ShieldCheck });
-      items.push({ to: '/configuracoes', label: 'Supabase & Segurança', icon: Settings });
-      items.push({ to: '/testes', label: 'Testes de Regras (QA)', icon: CheckCircle2 });
+      items.push({ to: '/admin/usuarios', label: 'Usuários & Equipe', icon: ShieldCheck });
+      items.push({ to: '/configuracoes', label: 'Configurações da Empresa', icon: Settings });
     }
 
     return items;
@@ -116,16 +111,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
           collapsed ? 'w-20' : 'w-64'
         }`}
       >
-        {/* Brand Header */}
+        {/* Brand Header: Fundo escuro (#1C1A17) -> Logo 05 (Dourada) */}
         <div className="p-4 border-b border-[#355C4D]/30 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-9 h-9 rounded-xl bg-[#355C4D] flex items-center justify-center text-[#B69A67] font-bold text-base border border-[#B69A67]/30 shadow-xs shrink-0">
-              IX
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="w-9 h-9 rounded-xl bg-stone-900/80 p-1 flex items-center justify-center border border-[#A18557]/40 shadow-xs shrink-0">
+              <IlexLogo variant="gold" size={28} title="ILEX Logo Dourada (Logo 05)" />
             </div>
             {!collapsed && (
               <div className="overflow-hidden">
-                <h1 className="font-bold text-sm tracking-wider text-white truncate">ILEX CRM</h1>
-                <p className="text-[9px] text-[#B69A67] uppercase tracking-widest font-semibold truncate">
+                <h1 className="font-extrabold text-sm tracking-wider text-white truncate">ILEX CRM</h1>
+                <p className="text-[9px] text-[#A18557] uppercase tracking-widest font-semibold truncate">
                   {organization?.trade_name || 'Representações'}
                 </p>
               </div>
@@ -183,40 +178,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
           })}
         </nav>
 
-        {/* User Identity & Session Area (Strictly Individual - NO identity switcher) */}
+        {/* User Identity & Session Area */}
         <div className="p-3 border-t border-[#355C4D]/30 bg-[#141311]">
-          {isDemoMode ? (
+          {currentMember ? (
             <div className="space-y-1.5">
               {!collapsed && (
                 <div className="flex items-center justify-between">
                   <span className="text-[9px] uppercase font-bold text-[#B69A67] tracking-wider">
-                    Modo Demonstração
-                  </span>
-                  <span className="w-2 h-2 rounded-full bg-amber-400" />
-                </div>
-              )}
-
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-[#355C4D] text-white font-bold text-xs flex items-center justify-center shrink-0 border border-[#B69A67]/40">
-                  {currentMember?.full_name ? currentMember.full_name[0].toUpperCase() : 'U'}
-                </div>
-                {!collapsed && (
-                  <div className="overflow-hidden flex-1">
-                    <p className="text-xs font-semibold text-white truncate">{currentMember?.full_name}</p>
-                    <p className="text-[10px] text-stone-400 truncate">
-                      {roleCode ? ROLE_DEFINITIONS[roleCode]?.label : 'Membro'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : user && currentMember ? (
-            <div className="space-y-1.5">
-              {!collapsed && (
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] uppercase font-bold text-emerald-400 flex items-center gap-1">
-                    <CheckCircle2 size={10} />
-                    Supabase Ativo
+                    {ROLE_DEFINITIONS[roleCode || 'admin']?.label || 'Usuário'}
                   </span>
                   <button
                     onClick={() => {
@@ -240,17 +209,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
                   <div className="overflow-hidden flex-1">
                     <p className="text-xs font-semibold text-white truncate">{currentMember.full_name}</p>
                     <p className="text-[10px] text-stone-400 truncate">
-                      {roleCode ? ROLE_DEFINITIONS[roleCode]?.label : roleCode}
+                      {currentMember.email}
                     </p>
                   </div>
                 )}
               </div>
 
-              {!collapsed && (
+              {!collapsed && (currentMember.scope_manufacturer_name || currentMember.scope_customer_name) && (
                 <div className="mt-1 px-2 py-0.5 rounded bg-stone-900 border border-stone-800 text-[10px] flex items-center justify-between">
                   <span className="text-stone-500">Escopo:</span>
                   <span className="font-semibold text-stone-300 truncate max-w-[120px]">
-                    {currentMember.scope_manufacturer_name || currentMember.scope_customer_name || 'Organização'}
+                    {currentMember.scope_manufacturer_name || currentMember.scope_customer_name}
                   </span>
                 </div>
               )}
@@ -265,7 +234,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
               <button
                 onClick={() => setAuthModalOpen(true)}
                 className="w-full py-2 px-2 bg-[#355C4D] hover:bg-[#233D33] text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-[#B69A67]/30"
-                title="Entrar com conta Supabase"
+                title="Entrar no sistema"
               >
                 <LogIn size={13} className="text-[#B69A67]" />
                 {!collapsed && <span>Entrar</span>}

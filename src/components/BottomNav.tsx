@@ -87,7 +87,7 @@ export const BottomNav: React.FC = () => {
                     className="flex items-center gap-2.5 p-3 rounded-xl bg-[#233D33] hover:bg-[#355C4D] border border-[#355C4D]/30 text-white"
                   >
                     <ShieldCheck size={16} className="text-[#B69A67]" />
-                    <span>Usuários & RBAC</span>
+                    <span>Usuários & Equipe</span>
                   </NavLink>
                   <NavLink
                     to="/configuracoes"
@@ -96,14 +96,6 @@ export const BottomNav: React.FC = () => {
                   >
                     <Settings size={16} className="text-[#B69A67]" />
                     <span>Configurações</span>
-                  </NavLink>
-                  <NavLink
-                    to="/testes"
-                    onClick={() => setIsMoreOpen(false)}
-                    className="flex items-center gap-2.5 p-3 rounded-xl bg-[#233D33] hover:bg-[#355C4D] border border-[#355C4D]/30 text-white"
-                  >
-                    <CheckCircle2 size={16} className="text-[#B69A67]" />
-                    <span>Testes Regras</span>
                   </NavLink>
                 </>
               )}

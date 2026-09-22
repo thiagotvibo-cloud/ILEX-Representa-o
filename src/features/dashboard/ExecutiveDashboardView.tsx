@@ -276,7 +276,7 @@ export const ExecutiveDashboardView: React.FC = () => {
           ) : (
             <div
               className="flex items-center gap-1.5 px-3 py-2 bg-stone-100 border border-[#E5E9E5] text-stone-400 text-xs rounded-xl cursor-not-allowed"
-              title="Exportação de relatórios restrita aos perfis Sócios e Financeiro"
+              title="Exportação de relatórios restrita aos administradores"
             >
               <Download size={14} />
               <span>Exportar (Restrito)</span>

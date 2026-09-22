@@ -9,8 +9,7 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { DashboardView } from '../features/dashboard/DashboardView';
 import { CustomersView } from '../features/customers/CustomersView';
 import { ManufacturersView } from '../features/manufacturers/ManufacturersView';
-import { SupabaseSettingsView } from '../features/settings/SupabaseSettingsView';
-import { ValidationTestsView } from '../features/tests/ValidationTestsView';
+import { SettingsView } from '../features/settings/SettingsView';
 import { UsersView } from '../features/admin/UsersView';
 import { OrdersView, PipelineAgendaView, CommissionsView, FinanceAdvisoryView } from '../features/placeholders/StageViews';
 import { canManageUsersAndSecurity, canManageCommercial, canViewCommissions } from '../types';
@@ -78,41 +77,28 @@ export const AuthenticatedLayout: React.FC = () => {
               {/* Advisory Plans */}
               <Route path="/assessoria" element={<FinanceAdvisoryView />} />
 
-              {/* Admin > Users & Accesses (Exclusive to socio_admin_master) */}
+              {/* Admin > Users & Accesses */}
               <Route
                 path="/admin/usuarios"
                 element={
                   <ProtectedRoute
                     checkPermission={canManageUsersAndSecurity}
-                    requiredModuleTitle="Admin: Usuários e Acessos"
+                    requiredModuleTitle="Usuários & Equipe"
                   >
                     <UsersView />
                   </ProtectedRoute>
                 }
               />
 
-              {/* Database Settings & Security (Exclusive to socio_admin_master) */}
+              {/* Organization Settings */}
               <Route
                 path="/configuracoes"
                 element={
                   <ProtectedRoute
                     checkPermission={canManageUsersAndSecurity}
-                    requiredModuleTitle="Configurações do Supabase & Segurança"
+                    requiredModuleTitle="Configurações da Empresa"
                   >
-                    <SupabaseSettingsView />
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Validation Tests (Exclusive to socio_admin_master) */}
-              <Route
-                path="/testes"
-                element={
-                  <ProtectedRoute
-                    checkPermission={canManageUsersAndSecurity}
-                    requiredModuleTitle="Testes Sintéticos de Regras"
-                  >
-                    <ValidationTestsView />
+                    <SettingsView />
                   </ProtectedRoute>
                 }
               />

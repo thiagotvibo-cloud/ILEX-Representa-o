@@ -48,19 +48,19 @@ BEGIN
     RETURNING id INTO v_org_id;
   END IF;
 
-  -- 2. Garantir papel socio_admin_master
+  -- 2. Garantir papel admin
   INSERT INTO public.roles (organization_id, code, name, description)
-  VALUES (v_org_id, 'socio_admin_master', 'Sócio Admin Master', 'Acesso irrestrito a todas as operações, segurança e gestão de usuários.')
+  VALUES (v_org_id, 'admin', 'Administrador', 'Acesso irrestrito a todas as operações, segurança e gestão de usuários.')
   ON CONFLICT (organization_id, code) DO NOTHING;
 
-  -- 3. Vincular usuário autenticado como Sócio Admin Master
+  -- 3. Vincular usuário autenticado como Administrador
   INSERT INTO public.memberships (
-    organization_id, user_id, role_code, full_name, email, partner_percentage, is_active
+    organization_id, user_id, role_code, full_name, email, is_active
   ) VALUES (
-    v_org_id, v_admin_user_id, 'socio_admin_master', 'Thiago', v_user_email, 50.0, true
+    v_org_id, v_admin_user_id, 'admin', 'Administrador Thiago', v_user_email, true
   )
   ON CONFLICT (organization_id, user_id) DO UPDATE
-  SET role_code = 'socio_admin_master', is_active = true, partner_percentage = 50.0;
+  SET role_code = 'admin', is_active = true;
 END $$;` : '';
 
   const copyCompleteScript = () => {
@@ -108,10 +108,12 @@ END $$;` : '';
       <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#E2DDD5] space-y-4 animate-scale-up max-h-[90vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-3 border-b border-[#E2DDD5]">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#3E4A32] text-[#A78A63] flex items-center justify-center font-bold">
-              <Lock size={16} />
-            </div>
+          <div className="flex items-center gap-3">
+            <img
+              src="/assets/logo-06-verde.svg"
+              alt="Logotipo ILEX Verde"
+              className="w-8 h-8 object-contain shrink-0"
+            />
             <div>
               <h2 className="font-bold text-sm text-[#1C1A17]">Autenticação &amp; Conexão Supabase</h2>
               <p className="text-[10px] text-stone-500">ILEX Representação e Assessoria Comercial Ltda</p>
@@ -166,7 +168,7 @@ END $$;` : '';
                 Usuário autenticado no Supabase Auth: <span className="font-mono font-bold text-stone-900">{user.email}</span>
               </p>
               <p className="text-stone-700 leading-relaxed text-[11px]">
-                Seu usuário autenticado está pronto. Você pode entrar imediatamente no sistema com privilégios totais de <strong>Sócio Admin Master</strong>, ou executar o script SQL no seu painel Supabase para gravar todas as tabelas e políticas RLS de forma definitiva.
+                Seu usuário autenticado está pronto. Você pode entrar imediatamente no sistema com privilégios de <strong>Administrador</strong>, ou executar o script SQL no seu painel Supabase para gravar todas as tabelas e políticas RLS de forma definitiva.
               </p>
             </div>
 
@@ -177,15 +179,15 @@ END $$;` : '';
                 <span>Entrar Imediatamente com Privilégios Totais</span>
               </div>
               <p className="text-[11px] text-emerald-800 leading-relaxed">
-                Ativa a sessão como Thiago (Sócio Admin Master, 50% de participação) na organização ILEX Comercial Ltda.
+                Ativa a sessão como Administrador na organização ILEX Comercial Ltda.
               </p>
               <button
                 type="button"
                 onClick={handleEnterAsFounder}
                 disabled={loading}
-                className="w-full py-2.5 bg-[#3E4A32] hover:bg-[#2C3524] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-2 shadow-xs"
+                className="w-full py-2.5 bg-[#3E4A32] hover:bg-[#2C3524] text-white rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
               >
-                <span>{loading ? 'Entrando...' : 'Entrar no Sistema como Sócio Admin Master'}</span>
+                <span>{loading ? 'Entrando...' : 'Entrar no Sistema como Administrador'}</span>
                 <ArrowRight size={14} className="text-[#A78A63]" />
               </button>
             </div>
@@ -200,14 +202,14 @@ END $$;` : '';
                 <button
                   type="button"
                   onClick={copyCompleteScript}
-                  className="flex items-center gap-1 px-2.5 py-1 bg-[#3E4A32] hover:bg-[#2C3524] text-white rounded text-[10px] font-bold transition-colors shadow-2xs"
+                  className="flex items-center gap-1 px-2.5 py-1 bg-[#3E4A32] hover:bg-[#2C3524] text-white rounded text-[10px] font-bold transition-colors shadow-2xs cursor-pointer"
                 >
                   {copiedScript ? <CheckCircle2 size={12} className="text-emerald-300" /> : <Copy size={12} />}
                   <span>{copiedScript ? 'Copiado!' : 'Copiar Script SQL Completo'}</span>
                 </button>
               </div>
               <p className="text-stone-600 text-[10px] leading-relaxed">
-                Execute no <strong>SQL Editor</strong> do painel Supabase (<code className="font-mono text-stone-800">kgesahzkwqvixcqsnplo</code>). Ele cria todas as 8 tabelas, RLS e vincula seu usuário <code className="font-mono text-stone-800">{user.email}</code>.
+                Execute no <strong>SQL Editor</strong> do painel Supabase (<code className="font-mono text-stone-800">kgesahzkwqvixcqsnplo</code>). Ele cria todas as tabelas, RLS e vincula seu usuário <code className="font-mono text-stone-800">{user.email}</code>.
               </p>
             </div>
 
@@ -215,7 +217,7 @@ END $$;` : '';
               <button
                 type="button"
                 onClick={() => signOut()}
-                className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-semibold transition-colors"
+                className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
               >
                 Encerrar Sessão
               </button>
@@ -258,7 +260,7 @@ END $$;` : '';
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 bg-[#3E4A32] hover:bg-[#2C3524] disabled:opacity-50 text-white rounded-lg font-semibold text-xs transition-colors flex items-center justify-center gap-2 shadow-xs"
+                className="w-full py-2.5 bg-[#3E4A32] hover:bg-[#2C3524] disabled:opacity-50 text-white rounded-lg font-semibold text-xs transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                 id="btn-login-submit"
               >
                 <LogIn size={15} className="text-[#A78A63]" />
@@ -266,23 +268,26 @@ END $$;` : '';
               </button>
             </form>
 
-            {/* Quick Access for Founder */}
+            {/* Quick Access for Admin */}
             <div className="p-3.5 bg-[#F8F7F4] rounded-xl border border-[#E2DDD5] space-y-2 text-xs">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-stone-900 flex items-center gap-1.5">
                   <Sparkles size={14} className="text-[#A78A63]" />
-                  Acesso Direto Sócio Fundador (Thiago)
+                  Acesso Direto Administrador
+                </span>
+                <span className="px-2 py-0.5 bg-[#3E4A32] text-white rounded text-[9px] font-bold uppercase tracking-wider">
+                  Admin
                 </span>
               </div>
               <p className="text-[11px] text-stone-600 leading-relaxed">
-                Entrar diretamente no sistema com o perfil Sócio Admin Master (50% de participação societária).
+                Entrar diretamente no sistema com o perfil Administrador na organização ILEX Comercial Ltda.
               </p>
               <button
                 type="button"
                 onClick={handleEnterAsFounder}
-                className="w-full py-2 bg-white hover:bg-stone-50 text-[#3E4A32] border border-[#3E4A32]/30 rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                className="w-full py-2 bg-white hover:bg-stone-50 text-[#3E4A32] border border-[#3E4A32]/30 rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
               >
-                <span>Acessar como Thiago (Sócio Admin Master)</span>
+                <span>Acessar como Administrador</span>
                 <ArrowRight size={13} />
               </button>
             </div>
