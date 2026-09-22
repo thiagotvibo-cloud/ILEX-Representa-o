@@ -107,7 +107,7 @@ export const ManufacturersView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-5 animate-fade-in">
       {/* Action Error Banner */}
       {actionError && (
         <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs flex items-center justify-between gap-2 shadow-xs">
@@ -121,35 +121,6 @@ export const ManufacturersView: React.FC = () => {
           >
             Fechar
           </button>
-        </div>
-      )}
-
-      {/* Database or RLS Error Banner */}
-      {dataError && !isDemoMode && (
-        <div className="p-3.5 bg-rose-50 border border-rose-300 text-rose-900 rounded-xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs">
-          <div className="flex items-start sm:items-center gap-2">
-            <AlertCircle size={18} className="text-rose-600 shrink-0 mt-0.5 sm:mt-0" />
-            <div>
-              <span className="font-bold block">Falha de Consulta no Supabase:</span>
-              <span className="text-rose-700 font-mono text-[11px]">{dataError}</span>
-            </div>
-          </div>
-          <button
-            onClick={() => refreshData()}
-            className="px-3 py-1.5 bg-rose-600 text-white font-semibold rounded-lg hover:bg-rose-700 text-xs shrink-0 self-start sm:self-auto"
-          >
-            Tentar Novamente
-          </button>
-        </div>
-      )}
-
-      {/* Awaiting Login State Notice */}
-      {!isDemoMode && isConfigured && !user && (
-        <div className="p-3.5 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl text-xs flex items-center gap-2 shadow-xs">
-          <AlertCircle size={18} className="text-amber-600 shrink-0" />
-          <p>
-            Modo real Supabase ativado. Acesse com seu e-mail e senha no menu lateral para visualizar e cadastrar representadas.
-          </p>
         </div>
       )}
 

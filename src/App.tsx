@@ -1,5 +1,6 @@
 import React from 'react';
 import { CRMProvider, useCRM } from './lib/store';
+import { ThemeProvider } from './lib/theme';
 import { AuthenticatedLayout } from './components/AuthenticatedLayout';
 import { LoginPage } from './features/auth/LoginPage';
 import { IlexLogo } from './components/IlexLogo';
@@ -9,7 +10,6 @@ const AppGate: React.FC = () => {
   const { session, currentMember, user, isDemoMode, isLoadingAuth } = useCRM();
 
   // Show a clean, branded loading spinner while Supabase checks the active session
-  // Background is light (#F7F8F6) -> Use Logo 06 (Verde)
   if (isLoadingAuth) {
     return (
       <div className="min-h-screen w-screen flex flex-col items-center justify-center bg-[#F7F8F6] text-[#26332D]">
@@ -19,7 +19,7 @@ const AppGate: React.FC = () => {
           </div>
           <div className="flex items-center gap-2 text-xs font-semibold text-stone-600">
             <div className="w-3.5 h-3.5 border-2 border-[#384633] border-t-transparent rounded-full animate-spin"></div>
-            <span>Verificando sessão segura Supabase...</span>
+            <span>Verificando autenticação segura...</span>
           </div>
         </div>
       </div>
@@ -38,9 +38,11 @@ const AppGate: React.FC = () => {
 
 export default function App() {
   return (
-    <CRMProvider>
-      <AppGate />
-    </CRMProvider>
+    <ThemeProvider>
+      <CRMProvider>
+        <AppGate />
+      </CRMProvider>
+    </ThemeProvider>
   );
 }
 

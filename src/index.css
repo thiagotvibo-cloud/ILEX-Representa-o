@@ -31,6 +31,243 @@ body {
   -webkit-tap-highlight-color: transparent;
   min-height: 100%;
   overscroll-behavior-y: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* =========================================================================
+   DARK MODE - HIGH CONTRAST & ACCESSIBLE PALETTE FOR ILEX CRM
+   ========================================================================= */
+
+html.dark body {
+  background-color: #101512 !important;
+  color: #F1F4F0 !important;
+}
+
+/* Base Surfaces & Structural Backgrounds */
+html.dark .bg-\[\#F7F8F6\],
+html.dark .bg-stone-100 {
+  background-color: #101512 !important;
+}
+
+html.dark .bg-white {
+  background-color: #17201B !important;
+  color: #F1F4F0 !important;
+}
+
+html.dark .bg-stone-50,
+html.dark .bg-\[\#FAF9F5\],
+html.dark .bg-\[\#F8F7F4\],
+html.dark .bg-\[\#EDF1EA\],
+html.dark .bg-\[\#EDF3F0\],
+html.dark .bg-\[\#F9F6F0\] {
+  background-color: #131A16 !important;
+}
+
+html.dark .bg-stone-200 {
+  background-color: #222C26 !important;
+}
+
+/* Borders, Outlines & Dividers */
+html.dark .border-\[\#E5E9E5\],
+html.dark .border-\[\#E2DDD5\],
+html.dark .border-stone-200,
+html.dark .border-stone-200\/70,
+html.dark .border-stone-300,
+html.dark .divide-stone-200 > * + *,
+html.dark .divide-\[\#E5E9E5\] > * + *,
+html.dark .divide-\[\#E2DDD5\] > * + * {
+  border-color: #26332A !important;
+}
+
+/* Typography & Text Contrast */
+html.dark .text-\[\#26332D\],
+html.dark .text-\[\#1C1A17\],
+html.dark .text-stone-900,
+html.dark .text-stone-800 {
+  color: #F4F7F3 !important;
+}
+
+html.dark .text-stone-700,
+html.dark .text-stone-600 {
+  color: #D3DFD7 !important;
+}
+
+html.dark .text-stone-500,
+html.dark .text-stone-400 {
+  color: #A3B3A7 !important;
+}
+
+html.dark .text-stone-300 {
+  color: #BAC8BE !important;
+}
+
+/* Luminous Brand Accents in Dark Mode */
+html.dark .text-\[\#355C4D\],
+html.dark .text-\[\#384633\],
+html.dark .text-\[\#3E4A32\],
+html.dark .text-\[\#233D33\],
+html.dark .text-\[\#487A67\] {
+  color: #6DC7A0 !important;
+}
+
+html.dark .text-\[\#B69A67\],
+html.dark .text-\[\#A18557\],
+html.dark .text-\[\#A78A63\],
+html.dark .text-\[\#967D50\],
+html.dark .text-\[\#8C6D37\] {
+  color: #E8D2A2 !important;
+}
+
+/* Form Inputs, Selects & Textareas */
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #131B17 !important;
+  color: #F1F4F0 !important;
+  border-color: #29382E !important;
+}
+
+html.dark select option {
+  background-color: #17201B !important;
+  color: #F1F4F0 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #728377 !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #6DC7A0 !important;
+  outline-color: #6DC7A0 !important;
+}
+
+/* Hover States */
+html.dark .hover\:bg-stone-50:hover,
+html.dark .hover\:bg-stone-50\/50:hover,
+html.dark .hover\:bg-stone-100:hover,
+html.dark .hover\:bg-\[\#F8F7F4\]\/80:hover {
+  background-color: #1E2922 !important;
+}
+
+/* Status Badges, Chips & Alert Banners */
+html.dark .bg-emerald-50,
+html.dark .bg-emerald-100 {
+  background-color: rgba(16, 185, 129, 0.16) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+}
+html.dark .text-emerald-800,
+html.dark .text-emerald-700,
+html.dark .text-emerald-900,
+html.dark .text-emerald-600 {
+  color: #6EE7B7 !important;
+}
+
+html.dark .bg-amber-50,
+html.dark .bg-amber-100,
+html.dark .bg-yellow-50 {
+  background-color: rgba(245, 158, 11, 0.16) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+}
+html.dark .text-amber-800,
+html.dark .text-amber-700,
+html.dark .text-amber-900,
+html.dark .text-amber-600 {
+  color: #FCD34D !important;
+}
+
+html.dark .bg-rose-50,
+html.dark .bg-rose-100,
+html.dark .bg-red-50 {
+  background-color: rgba(244, 63, 94, 0.16) !important;
+  border-color: rgba(244, 63, 94, 0.35) !important;
+}
+html.dark .text-rose-800,
+html.dark .text-rose-700,
+html.dark .text-rose-900,
+html.dark .text-rose-600 {
+  color: #FDA4AF !important;
+}
+
+html.dark .bg-blue-50,
+html.dark .bg-blue-100,
+html.dark .bg-sky-50 {
+  background-color: rgba(59, 130, 246, 0.16) !important;
+  border-color: rgba(59, 130, 246, 0.35) !important;
+}
+html.dark .text-blue-800,
+html.dark .text-blue-700,
+html.dark .text-blue-900,
+html.dark .text-blue-600 {
+  color: #93C5FD !important;
+}
+
+html.dark .bg-indigo-50,
+html.dark .bg-purple-50,
+html.dark .bg-indigo-100 {
+  background-color: rgba(139, 92, 246, 0.16) !important;
+  border-color: rgba(139, 92, 246, 0.35) !important;
+}
+html.dark .text-indigo-800,
+html.dark .text-purple-800,
+html.dark .text-indigo-700 {
+  color: #C4B5FD !important;
+}
+
+/* Brand Green and Gold Badges */
+html.dark .bg-\[\#355C4D\]\/10,
+html.dark .bg-\[\#384633\]\/10,
+html.dark .bg-\[\#3E4A32\]\/10 {
+  background-color: rgba(109, 199, 160, 0.16) !important;
+  border-color: rgba(109, 199, 160, 0.35) !important;
+}
+
+html.dark .bg-\[\#B69A67\]\/15,
+html.dark .bg-\[\#B69A67\]\/10,
+html.dark .bg-\[\#B69A67\]\/20 {
+  background-color: rgba(232, 210, 162, 0.16) !important;
+  border-color: rgba(232, 210, 162, 0.35) !important;
+}
+
+/* Tables in Dark Mode */
+html.dark table thead tr {
+  background-color: #121815 !important;
+  border-color: #26332A !important;
+}
+
+html.dark table th {
+  color: #A3B3A7 !important;
+  border-color: #26332A !important;
+}
+
+html.dark table td {
+  border-color: #212C24 !important;
+}
+
+/* Shadows and Popovers */
+html.dark .shadow-xs,
+html.dark .shadow-sm,
+html.dark .shadow-md,
+html.dark .shadow-lg,
+html.dark .shadow-xl {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Recharts in Dark Mode */
+html.dark .recharts-default-tooltip {
+  background-color: #17201B !important;
+  border-color: #29382E !important;
+  color: #F1F4F0 !important;
+}
+
+html.dark .recharts-cartesian-grid line {
+  stroke: #212C24 !important;
+}
+
+html.dark .recharts-text {
+  fill: #A3B3A7 !important;
 }
 
 /* Mobile input zoom prevention: iOS Safari zooms whenever input font-size < 16px */

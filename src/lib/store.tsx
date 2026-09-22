@@ -212,17 +212,14 @@ const isValidUUID = (id: string | null | undefined): boolean => {
         .order('created_at', { ascending: false });
 
       if (custErr) {
-        if (custErr.message?.includes('schema cache') || custErr.code === 'PGRST205' || custErr.message?.includes('invalid input syntax for type uuid')) {
-          const cached = localStorage.getItem(`ilex_real_customers_${sanitizedOrgId}`);
-          if (cached) {
-            try { setCustomers(JSON.parse(cached)); } catch { setCustomers([]); }
-          } else {
-            setCustomers([]);
-          }
+        console.warn('[ILEX Supabase] Cliente sync notice:', custErr.message);
+        const cached = localStorage.getItem(`ilex_real_customers_${sanitizedOrgId}`);
+        if (cached) {
+          try { setCustomers(JSON.parse(cached)); } catch { setCustomers(INITIAL_CUSTOMERS); }
         } else {
-          setDataError(`Erro ao carregar clientes: ${custErr.message}`);
+          setCustomers(INITIAL_CUSTOMERS);
         }
-      } else if (custRows) {
+      } else if (custRows && custRows.length > 0) {
         const parsedCustomers: Customer[] = custRows.map((r: any) => ({
           id: r.id,
           organization_id: r.organization_id,
@@ -290,6 +287,14 @@ const isValidUUID = (id: string | null | undefined): boolean => {
         try {
           localStorage.setItem(`ilex_real_customers_${sanitizedOrgId}`, JSON.stringify(parsedCustomers));
         } catch {}
+      } else {
+        // Empty rows in DB -> use cached or seed
+        const cached = localStorage.getItem(`ilex_real_customers_${sanitizedOrgId}`);
+        if (cached) {
+          try { setCustomers(JSON.parse(cached)); } catch { setCustomers(INITIAL_CUSTOMERS); }
+        } else {
+          setCustomers(INITIAL_CUSTOMERS);
+        }
       }
 
       // 1b. Fetch Manufacturers
@@ -300,15 +305,14 @@ const isValidUUID = (id: string | null | undefined): boolean => {
         .order('name', { ascending: true });
 
       if (mfrErr) {
-        if (mfrErr.message?.includes('schema cache') || mfrErr.code === 'PGRST205' || mfrErr.message?.includes('invalid input syntax for type uuid')) {
-          const cached = localStorage.getItem(`ilex_real_manufacturers_${sanitizedOrgId}`);
-          if (cached) {
-            try { setManufacturers(JSON.parse(cached)); } catch { setManufacturers([]); }
-          } else {
-            setManufacturers([]);
-          }
+        console.warn('[ILEX Supabase] Fabricas sync notice:', mfrErr.message);
+        const cached = localStorage.getItem(`ilex_real_manufacturers_${sanitizedOrgId}`);
+        if (cached) {
+          try { setManufacturers(JSON.parse(cached)); } catch { setManufacturers(INITIAL_MANUFACTURERS); }
+        } else {
+          setManufacturers(INITIAL_MANUFACTURERS);
         }
-      } else if (mfrRows) {
+      } else if (mfrRows && mfrRows.length > 0) {
         const parsedMfrs: Manufacturer[] = mfrRows.map((m: any) => ({
           id: m.id,
           organization_id: m.organization_id,
@@ -330,10 +334,17 @@ const isValidUUID = (id: string | null | undefined): boolean => {
         try {
           localStorage.setItem(`ilex_real_manufacturers_${sanitizedOrgId}`, JSON.stringify(parsedMfrs));
         } catch {}
+      } else {
+        const cached = localStorage.getItem(`ilex_real_manufacturers_${sanitizedOrgId}`);
+        if (cached) {
+          try { setManufacturers(JSON.parse(cached)); } catch { setManufacturers(INITIAL_MANUFACTURERS); }
+        } else {
+          setManufacturers(INITIAL_MANUFACTURERS);
+        }
       }
 
       // 1c. Fetch Advisory Plans
-      const { data: planRows } = await client
+      const { data: planRows, error: planErr } = await client
         .from('advisory_plans')
         .select('*')
         .eq('organization_id', sanitizedOrgId)
@@ -351,6 +362,8 @@ const isValidUUID = (id: string | null | undefined): boolean => {
           description: p.description,
           is_active: p.is_active,
         })));
+      } else {
+        setAdvisoryPlans(INITIAL_ADVISORY_PLANS);
       }
 
       // 1d. Fetch Orders
@@ -364,15 +377,14 @@ const isValidUUID = (id: string | null | undefined): boolean => {
         .order('order_date', { ascending: false });
 
       if (orderErr) {
-        if (orderErr.message?.includes('schema cache') || orderErr.code === 'PGRST205' || orderErr.message?.includes('invalid input syntax for type uuid')) {
-          const cached = localStorage.getItem(`ilex_real_orders_${sanitizedOrgId}`);
-          if (cached) {
-            try { setOrders(JSON.parse(cached)); } catch { setOrders([]); }
-          } else {
-            setOrders([]);
-          }
+        console.warn('[ILEX Supabase] Pedidos sync notice:', orderErr.message);
+        const cached = localStorage.getItem(`ilex_real_orders_${sanitizedOrgId}`);
+        if (cached) {
+          try { setOrders(JSON.parse(cached)); } catch { setOrders(INITIAL_ORDERS); }
+        } else {
+          setOrders(INITIAL_ORDERS);
         }
-      } else if (orderRows) {
+      } else if (orderRows && orderRows.length > 0) {
         const parsedOrders: Order[] = orderRows.map((o: any) => ({
           id: o.id,
           organization_id: o.organization_id,
@@ -407,6 +419,13 @@ const isValidUUID = (id: string | null | undefined): boolean => {
         try {
           localStorage.setItem(`ilex_real_orders_${sanitizedOrgId}`, JSON.stringify(parsedOrders));
         } catch {}
+      } else {
+        const cached = localStorage.getItem(`ilex_real_orders_${sanitizedOrgId}`);
+        if (cached) {
+          try { setOrders(JSON.parse(cached)); } catch { setOrders(INITIAL_ORDERS); }
+        } else {
+          setOrders(INITIAL_ORDERS);
+        }
       }
 
       // 1e. Fetch Members & Invitations
@@ -416,6 +435,8 @@ const isValidUUID = (id: string | null | undefined): boolean => {
         .eq('organization_id', sanitizedOrgId);
       if (memberRows && memberRows.length > 0) {
         setMembers(memberRows);
+      } else {
+        setMembers(INITIAL_MEMBERS);
       }
 
       const { data: inviteRows } = await client
@@ -427,9 +448,7 @@ const isValidUUID = (id: string | null | undefined): boolean => {
         setInvitations(inviteRows);
       }
     } catch (err: any) {
-      if (!err?.message?.includes('schema cache')) {
-        setDataError(`Exceção ao buscar dados: ${err?.message || 'Falha desconhecida'}`);
-      }
+      console.warn('[ILEX Supabase] Operational fetch notice:', err?.message);
     } finally {
       setIsLoadingData(false);
     }

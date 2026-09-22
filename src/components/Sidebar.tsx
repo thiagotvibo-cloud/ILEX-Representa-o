@@ -68,6 +68,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
         { to: '/pedidos', label: 'Pedidos da Fábrica', icon: ShoppingCart },
         { to: '/clientes', label: 'Clientes Compradores', icon: Users },
         { to: '/comissoes', label: 'Comissões & Regras', icon: DollarSign },
+        { to: '/configuracoes', label: 'Configurações & Tema', icon: Settings },
       ];
     }
 
@@ -76,6 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
         { to: '/', label: 'Minha Carteira', icon: LayoutDashboard },
         { to: '/pedidos', label: 'Histórico de Pedidos', icon: ShoppingCart },
         { to: '/fabricas', label: 'Catálogo de Fábricas', icon: Factory },
+        { to: '/configuracoes', label: 'Configurações & Tema', icon: Settings },
       ];
     }
 
@@ -97,8 +99,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
 
     if (isMaster) {
       items.push({ to: '/admin/usuarios', label: 'Usuários & Equipe', icon: ShieldCheck });
-      items.push({ to: '/configuracoes', label: 'Configurações da Empresa', icon: Settings });
     }
+
+    items.push({ to: '/configuracoes', label: 'Configurações & Tema', icon: Settings });
 
     return items;
   };

@@ -13,8 +13,11 @@ import {
   X,
   CheckCircle2,
   ShieldCheck,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useCRM } from '../lib/store';
+import { useTheme } from '../lib/theme';
 import {
   canManageUsersAndSecurity,
   isRepresentadaUser,
@@ -24,6 +27,7 @@ import { PWAInstallButton } from './PWAInstallButton';
 
 export const BottomNav: React.FC = () => {
   const { currentMember } = useCRM();
+  const { effectiveTheme, toggleTheme } = useTheme();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   const roleCode = currentMember?.role_code;
@@ -45,6 +49,28 @@ export const BottomNav: React.FC = () => {
                 aria-label="Fechar menu"
               >
                 <X size={20} />
+              </button>
+            </div>
+
+            {/* Quick Theme Switch in mobile drawer */}
+            <div className="mb-3 p-2.5 rounded-xl bg-[#233D33]/60 border border-[#355C4D]/30 flex items-center justify-between">
+              <span className="text-xs font-semibold text-stone-300">Modo de Exibição</span>
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#355C4D] hover:bg-[#2A473C] text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
+              >
+                {effectiveTheme === 'dark' ? (
+                  <>
+                    <Sun size={14} className="text-amber-400" />
+                    <span>Modo Claro</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon size={14} className="text-indigo-300" />
+                    <span>Modo Escuro</span>
+                  </>
+                )}
               </button>
             </div>
 
@@ -81,25 +107,25 @@ export const BottomNav: React.FC = () => {
               )}
 
               {isMaster && (
-                <>
-                  <NavLink
-                    to="/admin/usuarios"
-                    onClick={() => setIsMoreOpen(false)}
-                    className="flex items-center gap-2.5 p-3 rounded-xl bg-[#233D33] hover:bg-[#355C4D] border border-[#355C4D]/30 text-white"
-                  >
-                    <ShieldCheck size={16} className="text-[#B69A67]" />
-                    <span>Usuários & Equipe</span>
-                  </NavLink>
-                  <NavLink
-                    to="/configuracoes"
-                    onClick={() => setIsMoreOpen(false)}
-                    className="flex items-center gap-2.5 p-3 rounded-xl bg-[#233D33] hover:bg-[#355C4D] border border-[#355C4D]/30 text-white"
-                  >
-                    <Settings size={16} className="text-[#B69A67]" />
-                    <span>Configurações</span>
-                  </NavLink>
-                </>
+                <NavLink
+                  to="/admin/usuarios"
+                  onClick={() => setIsMoreOpen(false)}
+                  className="flex items-center gap-2.5 p-3 rounded-xl bg-[#233D33] hover:bg-[#355C4D] border border-[#355C4D]/30 text-white"
+                >
+                  <ShieldCheck size={16} className="text-[#B69A67]" />
+                  <span>Usuários & Equipe</span>
+                </NavLink>
               )}
+
+              {/* Accessible to ALL users */}
+              <NavLink
+                to="/configuracoes"
+                onClick={() => setIsMoreOpen(false)}
+                className="flex items-center gap-2.5 p-3 rounded-xl bg-[#233D33] hover:bg-[#355C4D] border border-[#355C4D]/30 text-white"
+              >
+                <Settings size={16} className="text-[#B69A67]" />
+                <span>Configurações & Tema</span>
+              </NavLink>
             </div>
 
             <div className="mt-3 pt-3 border-t border-stone-800">

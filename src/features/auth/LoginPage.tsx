@@ -1,31 +1,22 @@
 import React, { useState } from 'react';
 import { useCRM } from '../../lib/store';
 import {
-  Lock,
   Mail,
   Key,
   ShieldCheck,
   AlertCircle,
-  CheckCircle2,
-  Sparkles,
   LogIn,
-  Copy,
-  Database,
-  ArrowRight,
   Building2,
-  Briefcase,
   Eye,
   EyeOff,
   Factory,
 } from 'lucide-react';
-import { SUPABASE_COMPLETE_SETUP_SQL } from '../../lib/supabaseCompleteScript';
 
 export const LoginPage: React.FC = () => {
   const {
     signIn,
     authError,
     clearError,
-    supabaseUrl,
   } = useCRM();
 
   const [email, setEmail] = useState('thiagotv.ibo@gmail.com');
@@ -33,13 +24,6 @@ export const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
-  const [copiedScript, setCopiedScript] = useState(false);
-
-  const copyCompleteScript = () => {
-    navigator.clipboard.writeText(SUPABASE_COMPLETE_SETUP_SQL);
-    setCopiedScript(true);
-    setTimeout(() => setCopiedScript(false), 3000);
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -210,27 +194,6 @@ export const LoginPage: React.FC = () => {
                 <span>{loading ? 'Entrando...' : 'Entrar'}</span>
               </button>
             </form>
-          </div>
-
-          {/* Database Setup Accordion / Helper */}
-          <div className="bg-stone-50 rounded-xl border border-[#E2DDD5] p-3.5 space-y-2 text-xs">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 font-semibold text-stone-800">
-                <Database size={14} className="text-[#3E4A32]" />
-                <span>Banco Supabase Conectado</span>
-              </div>
-              <button
-                type="button"
-                onClick={copyCompleteScript}
-                className="flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-stone-100 text-[#3E4A32] border border-[#E2DDD5] rounded text-[10px] font-bold transition-colors shadow-2xs cursor-pointer"
-              >
-                {copiedScript ? <CheckCircle2 size={12} className="text-emerald-600" /> : <Copy size={12} />}
-                <span>{copiedScript ? 'SQL Copiado!' : 'Copiar Script SQL Completo'}</span>
-              </button>
-            </div>
-            <p className="text-[11px] text-stone-500 leading-relaxed">
-              Projeto: <code className="font-mono text-stone-700 font-semibold">{supabaseUrl ? new URL(supabaseUrl).hostname : 'Supabase Conectado'}</code>.
-            </p>
           </div>
         </div>
       </div>

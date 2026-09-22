@@ -88,18 +88,8 @@ export const AuthenticatedLayout: React.FC = () => {
                 }
               />
 
-              {/* Organization Settings */}
-              <Route
-                path="/configuracoes"
-                element={
-                  <ProtectedRoute
-                    checkPermission={canManageUsersAndSecurity}
-                    requiredModuleTitle="Configurações da Empresa"
-                  >
-                    <SettingsView />
-                  </ProtectedRoute>
-                }
-              />
+              {/* Organization & User Settings / Appearance */}
+              <Route path="/configuracoes" element={<SettingsView />} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

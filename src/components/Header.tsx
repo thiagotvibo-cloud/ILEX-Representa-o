@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useCRM } from '../lib/store';
+import { useTheme } from '../lib/theme';
 import {
   Search,
   Bell,
@@ -14,6 +15,8 @@ import {
   LogOut,
   X,
   Package,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthModal } from '../features/auth/AuthModal';
@@ -40,6 +43,8 @@ export const Header: React.FC = () => {
     dataError,
     authError,
   } = useCRM();
+
+  const { effectiveTheme, toggleTheme } = useTheme();
 
   const navigate = useNavigate();
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -284,6 +289,20 @@ export const Header: React.FC = () => {
 
           {/* Right: Actions, Notifications & Session */}
           <div className="flex items-center gap-2.5">
+            {/* Theme Toggle (Light / Dark) */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl text-stone-600 hover:text-[#26332D] hover:bg-stone-100 transition-colors cursor-pointer"
+              title={effectiveTheme === 'dark' ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'}
+              aria-label="Alternar tema"
+            >
+              {effectiveTheme === 'dark' ? (
+                <Sun size={18} className="text-amber-400" />
+              ) : (
+                <Moon size={18} className="text-stone-600" />
+              )}
+            </button>
+
             {/* PWA Direct Install Button for Chrome / Mobile */}
             <PWAInstallButton variant="compact" />
 
