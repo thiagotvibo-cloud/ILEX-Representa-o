@@ -16,27 +16,35 @@ import {
   FileSpreadsheet,
   Briefcase,
   TrendingUp,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
-import { canWriteData, canViewCommissions, isRepresentadaUser, isAssociadoUser, Order, OrderStatus } from '../../types';
+import { canWriteData, canViewCommissions, canDeleteOrder, isRepresentadaUser, isAssociadoUser, Order, OrderStatus } from '../../types';
 
 export const OrdersView: React.FC = () => {
   const {
     orders,
     customers,
     manufacturers,
+    products,
     currentMember,
     addOrder,
     updateOrderStatus,
+    deleteOrder,
+    convertContactToClient,
   } = useCRM();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<Order | null>(null);
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // New Order Form state
   const [selectedMfrId, setSelectedMfrId] = useState('');
   const [selectedCustId, setSelectedCustId] = useState('');
+  const [selectedProductId, setSelectedProductId] = useState('');
   const [orderNumber, setOrderNumber] = useState(`PED-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`);
   const [orderDate, setOrderDate] = useState(new Date().toISOString().slice(0, 10));
   const [itemDescription, setItemDescription] = useState('');
@@ -45,9 +53,56 @@ export const OrdersView: React.FC = () => {
   const [itemPrice, setItemPrice] = useState(100);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Grouped customers for order placement (Active clients + Prospects eligible for conversion)
+  const activeClientsList = useMemo(() => {
+    return customers.filter(c => c.entity_type === 'client');
+  }, [customers]);
+
+  const prospectContactsList = useMemo(() => {
+    return customers.filter(c => c.entity_type === 'contact');
+  }, [customers]);
+
+  // Available products for selected manufacturer
+  const availableProducts = useMemo(() => {
+    if (!selectedMfrId) return products;
+    return products.filter(p => p.manufacturer_id === selectedMfrId);
+  }, [products, selectedMfrId]);
+
+  const handleSelectProduct = (prodId: string) => {
+    setSelectedProductId(prodId);
+    if (!prodId) return;
+    const prod = products.find(p => p.id === prodId);
+    if (prod) {
+      setItemDescription(prod.name);
+      setItemSku(prod.sku);
+      setItemPrice(prod.unit_price);
+      setItemQuantity(prod.minimum_order_quantity || 1);
+      if (!selectedMfrId && prod.manufacturer_id) {
+        setSelectedMfrId(prod.manufacturer_id);
+      }
+    }
+  };
+
   const roleCode = currentMember?.role_code;
   const canCreate = canWriteData(roleCode);
   const canCommissions = canViewCommissions(roleCode);
+  const canDelete = canDeleteOrder(roleCode);
+
+  const confirmDeleteOrder = async () => {
+    if (!orderToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteOrder(orderToDelete.id);
+      if (selectedOrderDetails?.id === orderToDelete.id) {
+        setSelectedOrderDetails(null);
+      }
+      setOrderToDelete(null);
+    } catch (err: any) {
+      alert(err?.message || 'Erro ao excluir pedido.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Scoped orders filtering
   const scopedOrders = useMemo(() => {
@@ -109,6 +164,15 @@ export const OrdersView: React.FC = () => {
           },
         ],
       });
+
+      // If customer was a prospect contact, promote to active client upon first order
+      if (cust.entity_type === 'contact') {
+        try {
+          await convertContactToClient(cust.id);
+        } catch (convErr) {
+          console.warn('[ILEX] Failed to auto-convert prospect on order creation:', convErr);
+        }
+      }
 
       setIsNewOrderModalOpen(false);
       setItemDescription('');
@@ -249,12 +313,24 @@ export const OrdersView: React.FC = () => {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      <button
-                        onClick={() => setSelectedOrderDetails(order)}
-                        className="px-2.5 py-1 text-xs font-semibold text-[#355C4D] hover:bg-stone-100 rounded-lg transition-colors"
-                      >
-                        Detalhes
-                      </button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => setSelectedOrderDetails(order)}
+                          className="px-2.5 py-1 text-xs font-semibold text-[#355C4D] hover:bg-stone-100 rounded-lg transition-colors cursor-pointer"
+                        >
+                          Detalhes
+                        </button>
+                        {canDelete && (
+                          <button
+                            onClick={() => setOrderToDelete(order)}
+                            className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                            title="Excluir pedido"
+                            aria-label={`Excluir pedido ${order.order_number}`}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -279,7 +355,7 @@ export const OrdersView: React.FC = () => {
               </div>
               <button
                 onClick={() => setSelectedOrderDetails(null)}
-                className="p-1 text-stone-400 hover:text-stone-600 rounded-lg"
+                className="p-1 text-stone-400 hover:text-stone-600 rounded-lg cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -330,12 +406,98 @@ export const OrdersView: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 border-t border-[#E5E9E5] bg-stone-50 flex justify-end">
+            <div className="p-4 border-t border-[#E5E9E5] bg-stone-50 flex items-center justify-between">
+              {canDelete ? (
+                <button
+                  type="button"
+                  onClick={() => setOrderToDelete(selectedOrderDetails)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-100/80 border border-rose-200 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  <Trash2 size={13} />
+                  <span>Excluir Pedido</span>
+                </button>
+              ) : <div />}
+
               <button
                 onClick={() => setSelectedOrderDetails(null)}
-                className="px-4 py-2 bg-stone-200 text-stone-700 font-semibold rounded-xl text-xs hover:bg-stone-300"
+                className="px-4 py-2 bg-stone-200 text-stone-700 font-semibold rounded-xl text-xs hover:bg-stone-300 transition-colors cursor-pointer"
               >
                 Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal to Delete Order */}
+      {orderToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-stone-200 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in">
+            <div className="p-5 border-b border-stone-100 flex items-start gap-3 bg-rose-50/60">
+              <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <AlertTriangle size={20} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-bold text-stone-900">
+                  Confirmar Exclusão de Pedido
+                </h3>
+                <p className="text-xs text-stone-500 mt-0.5">
+                  Esta ação removerá o registro de pedido e atualizará os faturamentos.
+                </p>
+              </div>
+              <button
+                onClick={() => setOrderToDelete(null)}
+                disabled={isDeleting}
+                className="p-1 text-stone-400 hover:text-stone-600 rounded-lg cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-3 text-xs text-stone-600">
+              <div className="p-3.5 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-stone-500">Número do Pedido:</span>
+                  <span className="font-bold text-stone-900 font-mono">{orderToDelete.order_number}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-stone-500">Cliente:</span>
+                  <span className="font-semibold text-stone-900">{orderToDelete.customer_name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-stone-500">Fábrica Representada:</span>
+                  <span className="font-semibold text-stone-900">{orderToDelete.manufacturer_name}</span>
+                </div>
+                <div className="flex justify-between border-t border-stone-200 pt-2">
+                  <span className="text-stone-500">Valor Total:</span>
+                  <span className="font-bold text-stone-900">
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(orderToDelete.total_amount)}
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-stone-500 text-[11px] leading-relaxed">
+                Tem certeza que deseja excluir o pedido <strong>{orderToDelete.order_number}</strong>? A comissão apurada e as estatísticas financeiras serão recalculadas automaticamente.
+              </p>
+            </div>
+
+            <div className="p-4 border-t border-stone-100 bg-stone-50 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setOrderToDelete(null)}
+                disabled={isDeleting}
+                className="px-4 py-2 border border-stone-200 text-stone-700 font-semibold rounded-xl text-xs hover:bg-stone-100 transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteOrder}
+                disabled={isDeleting}
+                className="flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                <Trash2 size={13} />
+                <span>{isDeleting ? 'Excluindo...' : 'Sim, Excluir'}</span>
               </button>
             </div>
           </div>
@@ -377,12 +539,43 @@ export const OrdersView: React.FC = () => {
                     onChange={e => setSelectedCustId(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border border-[#E5E9E5] bg-[#F7F8F6]"
                   >
-                    <option value="">Selecione...</option>
-                    {customers.map(c => (
-                      <option key={c.id} value={c.id}>{c.trade_name || c.legal_name}</option>
-                    ))}
+                    <option value="">Selecione o cliente ou prospect...</option>
+                    {activeClientsList.length > 0 && (
+                      <optgroup label="Carteira de Clientes Ativos">
+                        {activeClientsList.map(c => (
+                          <option key={c.id} value={c.id}>{c.trade_name || c.legal_name}</option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {prospectContactsList.length > 0 && (
+                      <optgroup label="Contatos em Prospecção (Ativação Automática ao Emitir)">
+                        {prospectContactsList.map(c => (
+                          <option key={c.id} value={c.id}>⭐ [Prospect] {c.trade_name || c.legal_name}</option>
+                        ))}
+                      </optgroup>
+                    )}
                   </select>
                 </div>
+              </div>
+
+              {/* Product catalog selector */}
+              <div>
+                <label className="block text-[11px] font-semibold text-[#355C4D] mb-1 flex items-center justify-between">
+                  <span>Selecionar do Catálogo de Produtos</span>
+                  <span className="text-[10px] text-stone-400 font-normal">Preenche dados automaticamente</span>
+                </label>
+                <select
+                  value={selectedProductId}
+                  onChange={e => handleSelectProduct(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-[#355C4D]/30 bg-[#F7F8F6] text-stone-800 font-medium"
+                >
+                  <option value="">-- Escolha um produto cadastrado ou digite abaixo --</option>
+                  {availableProducts.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.sku}) - {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.unit_price)}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>

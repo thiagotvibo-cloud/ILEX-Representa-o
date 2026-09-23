@@ -119,7 +119,7 @@ export const ROLE_DEFINITIONS: Record<UserRole, { label: string; description: st
   associado: {
     label: 'Representante Comercial',
     description: 'Acesso à carteira de clientes e pedidos.',
-    isExternal: false,
+    isExternal: true,
   },
   representada_admin: {
     label: 'Representada (Fábrica)',
@@ -139,7 +139,8 @@ export function isAdminUser(role?: UserRole): boolean {
 }
 
 export function canManageUsersAndSecurity(role?: UserRole): boolean {
-  return isAdminUser(role);
+  if (!role) return false;
+  return role === 'admin' || role === 'socio_admin_master';
 }
 
 export function canManageCommercial(role?: UserRole): boolean {
@@ -171,7 +172,7 @@ export function canExportReports(role?: UserRole): boolean {
 
 export function isExternalUser(role?: UserRole): boolean {
   if (!role) return false;
-  return role === 'representada' || role === 'representada_admin' || role === 'representada_leitura';
+  return role === 'representada' || role === 'representada_admin' || role === 'representada_leitura' || role === 'associado';
 }
 
 export function isRepresentadaUser(role?: UserRole): boolean {
@@ -180,7 +181,35 @@ export function isRepresentadaUser(role?: UserRole): boolean {
 }
 
 export function isAssociadoUser(role?: UserRole): boolean {
-  return false;
+  if (!role) return false;
+  return role === 'associado';
+}
+
+export function isRepresentanteUser(role?: UserRole): boolean {
+  if (!role) return false;
+  return (
+    role === 'representante' ||
+    role === 'comercial' ||
+    role === 'associado' ||
+    role === 'leitura'
+  );
+}
+
+export function canAccessContactsTab(role?: UserRole): boolean {
+  if (!role) return false;
+  // A aba de contatos só pode aparecer para Administrador ou login de Representante
+  return isAdminUser(role) || isRepresentanteUser(role);
+}
+
+export function canDeleteProduct(role?: UserRole): boolean {
+  if (!role) return false;
+  // Exclusão de produtos permitida estritamente para Administradores
+  return isAdminUser(role);
+}
+
+export function canDeleteOrder(role?: UserRole): boolean {
+  if (!role) return false;
+  return isAdminUser(role) || role === 'representante' || role === 'comercial';
 }
 
 export interface CustomerAddress {
@@ -229,6 +258,25 @@ export interface CustomerManufacturerLink {
   notes?: string;
 }
 
+export interface Product {
+  id: string;
+  organization_id: string;
+  manufacturer_id: string;
+  manufacturer_name?: string;
+  sku: string;
+  name: string;
+  description?: string;
+  category?: string;
+  unit: string; // UN, CX, FD, KG, TON, M2, PCT, SC
+  unit_price: number;
+  minimum_order_quantity?: number;
+  ncm?: string;
+  commission_percentage?: number; // Comissão específica ou herdada da fábrica
+  status: 'active' | 'inactive';
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Customer {
   id: string;
   organization_id: string;
@@ -248,6 +296,13 @@ export interface Customer {
   company_size?: string;
   is_branch: boolean;
   status: 'active' | 'incomplete' | 'inactive' | 'blocked';
+  entity_type?: 'client' | 'contact'; // 'client' = cliente ativo já atendido/vendido; 'contact' = lead/prospect que ainda não comprou
+  contact_subtype?: 'person' | 'factory'; // para contatos: 'person' = comprador/pessoa física; 'factory' = fábrica/indústria em prospecção
+  contact_person_name?: string; // Comprador ou decisor principal
+  contact_phone?: string;
+  contact_email?: string;
+  contact_city?: string;
+  contact_state?: string;
   tags: string[];
   notes?: string;
   addresses?: CustomerAddress[];

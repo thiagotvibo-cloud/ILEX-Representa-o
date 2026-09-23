@@ -19,11 +19,12 @@ import {
   ChevronRight,
   Building2,
   Lock,
+  Package,
+  Contact,
 } from 'lucide-react';
 import { useCRM } from '../lib/store';
 import { AuthModal } from '../features/auth/AuthModal';
 import { IlexLogo } from './IlexLogo';
-import { PWAInstallButton } from './PWAInstallButton';
 import {
   ROLE_DEFINITIONS,
   canManageUsersAndSecurity,
@@ -31,6 +32,7 @@ import {
   canViewCommissions,
   isRepresentadaUser,
   isAssociadoUser,
+  canAccessContactsTab,
 } from '../types';
 
 interface SidebarProps {
@@ -59,6 +61,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
   const isMaster = canManageUsersAndSecurity(roleCode);
   const isExternalRep = isRepresentadaUser(roleCode);
   const isAssoc = isAssociadoUser(roleCode);
+  const canSeeContacts = canAccessContactsTab(roleCode);
 
   // Build navigation items tailored strictly to the role
   const getNavItems = () => {
@@ -66,6 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
       return [
         { to: '/', label: 'Portal da Fábrica', icon: LayoutDashboard },
         { to: '/pedidos', label: 'Pedidos da Fábrica', icon: ShoppingCart },
+        { to: '/produtos', label: 'Meus Produtos', icon: Package },
         { to: '/clientes', label: 'Clientes Compradores', icon: Users },
         { to: '/comissoes', label: 'Comissões & Regras', icon: DollarSign },
         { to: '/configuracoes', label: 'Configurações & Tema', icon: Settings },
@@ -73,21 +77,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
     }
 
     if (isAssoc) {
-      return [
+      const assocItems = [
         { to: '/', label: 'Minha Carteira', icon: LayoutDashboard },
         { to: '/pedidos', label: 'Histórico de Pedidos', icon: ShoppingCart },
+        { to: '/clientes', label: 'Clientes Ativos', icon: Users },
+      ];
+      if (canSeeContacts) {
+        assocItems.push({ to: '/contatos', label: 'Contatos & Prospecção', icon: Contact });
+      }
+      assocItems.push(
+        { to: '/produtos', label: 'Catálogo de Produtos', icon: Package },
         { to: '/fabricas', label: 'Catálogo de Fábricas', icon: Factory },
         { to: '/configuracoes', label: 'Configurações & Tema', icon: Settings },
-      ];
+      );
+      return assocItems;
     }
 
-    // Internal Roles
+    // Internal Roles (Admin, Representante, etc.)
     const items = [
       { to: '/', label: 'Início & Indicadores', icon: LayoutDashboard },
-      { to: '/clientes', label: 'Clientes & Contatos', icon: Users },
+      { to: '/clientes', label: 'Clientes Ativos', icon: Users },
+    ];
+
+    if (canSeeContacts) {
+      items.push({ to: '/contatos', label: 'Contatos & Prospecção', icon: Contact });
+    }
+
+    items.push(
+      { to: '/produtos', label: 'Produtos (Catálogo)', icon: Package },
       { to: '/fabricas', label: 'Fábricas (Representadas)', icon: Factory },
       { to: '/pedidos', label: 'Pedidos & Faturamento', icon: ShoppingCart },
-    ];
+    );
 
     if (canManageCommercial(roleCode)) {
       items.push({ to: '/agenda', label: 'Funil & Agenda', icon: Calendar });
@@ -227,12 +247,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
                   <span className="font-semibold text-stone-300 truncate max-w-[120px]">
                     {currentMember?.scope_manufacturer_name || currentMember?.scope_customer_name}
                   </span>
-                </div>
-              )}
-              {/* Install App button */}
-              {!collapsed && (
-                <div className="pt-2">
-                  <PWAInstallButton variant="subtle" />
                 </div>
               )}
             </div>

@@ -7,18 +7,25 @@ import { Header } from './Header';
 import { ProtectedRoute } from './ProtectedRoute';
 import { DashboardView } from '../features/dashboard/DashboardView';
 import { CustomersView } from '../features/customers/CustomersView';
+import { ContactsView } from '../features/contacts/ContactsView';
+import { ProductsView } from '../features/products/ProductsView';
 import { ManufacturersView } from '../features/manufacturers/ManufacturersView';
 import { SettingsView } from '../features/settings/SettingsView';
 import { UsersView } from '../features/admin/UsersView';
 import { OrdersView, PipelineAgendaView, CommissionsView, FinanceAdvisoryView } from '../features/placeholders/StageViews';
-import { canManageUsersAndSecurity, canManageCommercial, canViewCommissions } from '../types';
+import {
+  canManageUsersAndSecurity,
+  canManageCommercial,
+  canViewCommissions,
+  canAccessContactsTab,
+} from '../types';
 
 export const AuthenticatedLayout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <BrowserRouter>
-      <div className="flex h-[100dvh] min-h-[100dvh] w-screen overflow-hidden bg-[#F7F8F6] text-[#26332D] font-sans">
+      <div className="flex h-[100dvh] min-h-[100dvh] w-full max-w-full overflow-hidden bg-[#F7F8F6] text-[#26332D] font-sans">
         {/* Desktop Left Sidebar (Collapsible) */}
         <div className="hidden md:flex shrink-0">
           <Sidebar
@@ -31,13 +38,29 @@ export const AuthenticatedLayout: React.FC = () => {
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
           <Header />
 
-          <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-[max(calc(env(safe-area-inset-bottom,0px)+5rem),5.5rem)] md:pb-8">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 p-3 sm:p-5 md:p-8 pb-[max(calc(env(safe-area-inset-bottom,0px)+5rem),5.5rem)] md:pb-8">
             <Routes>
               {/* Unified / Role-Dispatched Dashboard */}
               <Route path="/" element={<DashboardView />} />
 
-              {/* Customers */}
+              {/* Customers (Active Clients) */}
               <Route path="/clientes" element={<CustomersView />} />
+
+              {/* Contacts (Prospects / Buyers & Factories - Apenas Admin ou Representante) */}
+              <Route
+                path="/contatos"
+                element={
+                  <ProtectedRoute
+                    checkPermission={canAccessContactsTab}
+                    requiredModuleTitle="Contatos & Prospecção"
+                  >
+                    <ContactsView />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Products Catalog */}
+              <Route path="/produtos" element={<ProductsView />} />
 
               {/* Manufacturers */}
               <Route path="/fabricas" element={<ManufacturersView />} />

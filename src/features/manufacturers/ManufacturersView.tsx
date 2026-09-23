@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useCRM } from '../../lib/store';
-import { Manufacturer, CommissionTrigger } from '../../types';
+import { Manufacturer, CommissionTrigger, isAdminUser } from '../../types';
 import {
   Factory,
   Plus,
   Edit2,
+  Trash2,
   DollarSign,
   Calendar,
   AlertCircle,
@@ -12,13 +13,18 @@ import {
   Building2,
   FileSpreadsheet,
   X,
+  ShieldAlert,
 } from 'lucide-react';
+
+import { SpreadsheetImportModal } from '../../components/SpreadsheetImportModal';
 
 export const ManufacturersView: React.FC = () => {
   const {
     manufacturers,
     addManufacturer,
     updateManufacturer,
+    deleteManufacturer,
+    currentMember,
     isLoadingData,
     dataError,
     refreshData,
@@ -27,8 +33,13 @@ export const ManufacturersView: React.FC = () => {
     user,
   } = useCRM();
 
+  const isAdmin = isAdminUser(currentMember?.role_code);
+
   const [editingMfr, setEditingMfr] = useState<Manufacturer | null>(null);
+  const [deletingMfr, setDeletingMfr] = useState<Manufacturer | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -40,6 +51,23 @@ export const ManufacturersView: React.FC = () => {
   const [triggerDesc, setTriggerDesc] = useState('');
   const [cutoffDay, setCutoffDay] = useState('25');
   const [status, setStatus] = useState<'active' | 'planned'>('active');
+
+  const handleDelete = async () => {
+    if (!deletingMfr) return;
+    setActionError(null);
+    setIsDeleting(true);
+    try {
+      await deleteManufacturer(deletingMfr.id);
+      if (editingMfr?.id === deletingMfr.id) {
+        setEditingMfr(null);
+      }
+      setDeletingMfr(null);
+    } catch (err: any) {
+      setActionError(err?.message || 'Falha ao excluir fábrica representada.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const openEdit = (mfr: Manufacturer) => {
     setActionError(null);
@@ -107,7 +135,7 @@ export const ManufacturersView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-5 animate-fade-in min-w-0 max-w-full">
       {/* Action Error Banner */}
       {actionError && (
         <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs flex items-center justify-between gap-2 shadow-xs">
@@ -125,25 +153,35 @@ export const ManufacturersView: React.FC = () => {
       )}
 
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-xl border border-[#E2DDD5] shadow-xs">
-        <div>
-          <h1 className="text-xl font-bold text-[#1C1A17] flex items-center gap-2">
-            <Factory size={22} className="text-[#3E4A32]" />
-            Fábricas &amp; Representadas
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-[#E2DDD5] shadow-xs min-w-0 max-w-full">
+        <div className="min-w-0">
+          <h1 className="text-lg sm:text-xl font-bold text-[#1C1A17] flex items-center gap-2">
+            <Factory size={22} className="text-[#3E4A32] shrink-0" />
+            <span>Fábricas &amp; Representadas</span>
           </h1>
           <p className="text-xs text-stone-500 mt-0.5">
             Parametrização contratual, gatilhos de direito à comissão e prazos de repasse.
           </p>
         </div>
 
-        <button
-          onClick={openCreate}
-          className="px-4 py-2 bg-[#3E4A32] hover:bg-[#2C3524] text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors shadow-xs shrink-0"
-          id="btn-nova-fabrica"
-        >
-          <Plus size={16} className="text-[#A78A63]" />
-          <span>Cadastrar Fábrica</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="px-3.5 py-2 bg-white hover:bg-stone-50 text-[#3E4A32] border border-[#3E4A32]/30 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-2xs"
+          >
+            <FileSpreadsheet size={16} className="text-[#3E4A32]" />
+            <span>Importar Planilha</span>
+          </button>
+
+          <button
+            onClick={openCreate}
+            className="px-4 py-2 bg-[#3E4A32] hover:bg-[#2C3524] text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-xs"
+            id="btn-nova-fabrica"
+          >
+            <Plus size={16} className="text-[#A78A63]" />
+            <span>Cadastrar Fábrica</span>
+          </button>
+        </div>
       </div>
 
       {/* Rules Overview Callout */}
@@ -208,13 +246,25 @@ export const ManufacturersView: React.FC = () => {
                     </span>
                   </div>
 
-                  <button
-                    onClick={() => openEdit(mfr)}
-                    className="p-1.5 text-stone-500 hover:text-[#3E4A32] hover:bg-[#F8F7F4] rounded-lg transition-colors"
-                    title="Editar regras da fábrica"
-                  >
-                    <Edit2 size={16} />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => openEdit(mfr)}
+                      className="p-1.5 text-stone-500 hover:text-[#3E4A32] hover:bg-[#F8F7F4] rounded-lg transition-colors"
+                      title="Editar regras da fábrica"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => setDeletingMfr(mfr)}
+                        className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                        title="Excluir fábrica representada (Apenas Administrador)"
+                        id={`btn-delete-mfr-${mfr.code.toLowerCase()}`}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="mt-4 space-y-2 text-xs">
@@ -367,28 +417,102 @@ export const ManufacturersView: React.FC = () => {
                 />
               </div>
 
-              <div className="pt-3 border-t border-[#E2DDD5] flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsCreating(false);
-                    setEditingMfr(null);
-                  }}
-                  className="px-3 py-1.5 bg-stone-200 text-stone-700 rounded-lg text-xs font-semibold"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 bg-[#3E4A32] text-white rounded-lg text-xs font-semibold"
-                >
-                  Salvar Fábrica
-                </button>
+              <div className="pt-3 border-t border-[#E2DDD5] flex items-center justify-between gap-2">
+                <div>
+                  {editingMfr && isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeletingMfr(editingMfr);
+                      }}
+                      className="px-3 py-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors border border-rose-200 cursor-pointer"
+                      id="btn-delete-mfr-modal"
+                    >
+                      <Trash2 size={13} />
+                      <span>Excluir Fábrica</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCreating(false);
+                      setEditingMfr(null);
+                    }}
+                    className="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="px-4 py-1.5 bg-[#3E4A32] hover:bg-[#2C3524] text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {isSaving ? 'Salvando...' : 'Salvar Fábrica'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal (Admin Only) */}
+      {deletingMfr && (
+        <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-rose-200 space-y-4 animate-scale-up">
+            <div className="flex items-center gap-3 text-rose-600 pb-2 border-b border-rose-100">
+              <div className="p-2.5 bg-rose-50 rounded-xl">
+                <ShieldAlert size={22} className="text-rose-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-stone-900">Excluir Fábrica Representada</h3>
+                <p className="text-[11px] text-stone-500 font-medium">Permissão exclusiva de Administrador</p>
+              </div>
+            </div>
+
+            <div className="text-xs text-stone-600 space-y-2 leading-relaxed bg-[#FAF9F6] p-3.5 rounded-xl border border-[#E2DDD5]">
+              <p>
+                Você tem certeza que deseja excluir a representada{' '}
+                <strong className="text-stone-900 font-bold">{deletingMfr.name}</strong>{' '}
+                (Sigla: <span className="font-mono font-bold text-stone-800">{deletingMfr.code}</span>)?
+              </p>
+              <p className="text-[11px] text-stone-500">
+                Esta ação removerá a representada da lista de fábricas, seus gatilhos contratuais e vínculos operacionais ativos.
+              </p>
+            </div>
+
+            <div className="pt-2 flex justify-end gap-2">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setDeletingMfr(null)}
+                className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleDelete}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
+                id="btn-confirm-delete-mfr"
+              >
+                <Trash2 size={14} />
+                <span>{isDeleting ? 'Excluindo...' : 'Confirmar Exclusão'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Spreadsheet Import Modal */}
+      <SpreadsheetImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        defaultTarget="manufacturers"
+      />
     </div>
   );
 };

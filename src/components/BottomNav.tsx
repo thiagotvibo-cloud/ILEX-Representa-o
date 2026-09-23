@@ -15,6 +15,8 @@ import {
   ShieldCheck,
   Sun,
   Moon,
+  Package,
+  Contact,
 } from 'lucide-react';
 import { useCRM } from '../lib/store';
 import { useTheme } from '../lib/theme';
@@ -22,8 +24,8 @@ import {
   canManageUsersAndSecurity,
   isRepresentadaUser,
   isAssociadoUser,
+  canAccessContactsTab,
 } from '../types';
-import { PWAInstallButton } from './PWAInstallButton';
 
 export const BottomNav: React.FC = () => {
   const { currentMember } = useCRM();
@@ -34,6 +36,7 @@ export const BottomNav: React.FC = () => {
   const isMaster = canManageUsersAndSecurity(roleCode);
   const isExternalRep = isRepresentadaUser(roleCode);
   const isAssoc = isAssociadoUser(roleCode);
+  const canSeeContacts = canAccessContactsTab(roleCode);
 
   return (
     <>
@@ -75,6 +78,26 @@ export const BottomNav: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs">
+              {canSeeContacts && (
+                <NavLink
+                  to="/contatos"
+                  onClick={() => setIsMoreOpen(false)}
+                  className="flex items-center gap-2.5 p-3 rounded-xl bg-[#233D33] hover:bg-[#355C4D] border border-[#355C4D]/30 text-white"
+                >
+                  <Contact size={16} className="text-[#B69A67]" />
+                  <span>Contatos</span>
+                </NavLink>
+              )}
+
+              <NavLink
+                to="/produtos"
+                onClick={() => setIsMoreOpen(false)}
+                className="flex items-center gap-2.5 p-3 rounded-xl bg-[#233D33] hover:bg-[#355C4D] border border-[#355C4D]/30 text-white"
+              >
+                <Package size={16} className="text-[#B69A67]" />
+                <span>Produtos</span>
+              </NavLink>
+
               {!isAssoc && (
                 <NavLink
                   to="/fabricas"
@@ -126,10 +149,6 @@ export const BottomNav: React.FC = () => {
                 <Settings size={16} className="text-[#B69A67]" />
                 <span>Configurações & Tema</span>
               </NavLink>
-            </div>
-
-            <div className="mt-3 pt-3 border-t border-stone-800">
-              <PWAInstallButton variant="full" />
             </div>
           </div>
         </div>

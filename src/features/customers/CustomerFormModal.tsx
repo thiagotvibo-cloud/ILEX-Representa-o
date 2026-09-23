@@ -105,6 +105,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
       segment: segment.trim() || undefined,
       company_size: companySize,
       status,
+      entity_type: initialCustomer?.entity_type || 'client',
       tags,
       notes: notes.trim() || undefined,
       is_branch: false,

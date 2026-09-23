@@ -10,7 +10,7 @@ export const DashboardView: React.FC = () => {
   const roleCode = currentMember?.role_code;
 
   return (
-    <div className="space-y-6 animate-fade-in max-w-7xl mx-auto pb-12">
+    <div className="space-y-6 animate-fade-in w-full max-w-full min-w-0 overflow-hidden pb-12">
       {/* Role-based Dashboard Dispatcher */}
       {isRepresentadaUser(roleCode) ? (
         <RepresentadaDashboardView />

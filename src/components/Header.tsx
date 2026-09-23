@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthModal } from '../features/auth/AuthModal';
-import { PWAInstallButton } from './PWAInstallButton';
 import { IlexLogo } from './IlexLogo';
 import {
   ROLE_DEFINITIONS,
@@ -304,9 +303,6 @@ export const Header: React.FC = () => {
                 <Moon size={18} className="text-stone-600" />
               )}
             </button>
-
-            {/* PWA Direct Install Button for Chrome / Mobile */}
-            <PWAInstallButton variant="compact" />
 
             {/* Operational Notifications Popover */}
             <div className="relative" ref={notifRef}>
